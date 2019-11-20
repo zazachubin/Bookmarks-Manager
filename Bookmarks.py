@@ -1,6 +1,7 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
+from objbrowser import browse
 import datetime
 import pickle
 import time
@@ -39,7 +40,6 @@ data = {'header': ['დასახელება','მიმდინარე
                    [6,1,'38','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
                    [6,2,'366','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
                    [6,4,r'D:\Library\ამაჩქარებლები\EPD ამაჩქარლების ფიზიკა.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}
-
 tt = True
 tf = True
 ts = True
@@ -54,7 +54,6 @@ temp_data = { 'header':['დასახელება','მიმდინა�
               'config': {'tableColNumber' : 6,'language' : 'georgian'},
               'Merge':[], 
               'table':[] }
-
 temp_header = temp_data['header']
 temp_Merge = temp_data['Merge']
 temp_table = temp_data['table']
@@ -191,6 +190,7 @@ class App(QMainWindow):
         pasteAct = QAction(QIcon('img/paste.png'),'ჩაკვრა', self)
         pasteAct.setShortcut("Ctrl+V")
         pasteAct.triggered.connect(lambda: self.term('ჩაკვრა'))
+        pasteAct.triggered.connect(self.paste)
 # ------------------------------------------------------- play -----------------------------------------------------
         playAct = QAction(QIcon('img/play.png'),'გაშვება', self)
         playAct.setShortcut("Ctrl+P")
@@ -406,58 +406,55 @@ class App(QMainWindow):
 
         with open('data.txt', 'w') as outfile:
             json.dump(data, outfile, indent=4)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ copy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ copy +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def copy(self):
         global table
+        self.clip = QApplication.clipboard()
+        self.selected = table.selectedRanges()
 
-        for item in table.selectedIndexes():
-            try:
-                self.term(str(item))
+        t_row = []
+        t_col = []
+        for i in range(len(self.selected)):
+            t_col.append(self.selected[i].leftColumn())
+            t_row.append(self.selected[i].topRow())
 
-            except AttributeError:
-                pass
-        
+        max_row = max(t_row) + 1
+        min_row = min(t_row)
 
-        from pprint import pprint
-        clip = QApplication.clipboard()
-        mime = clip.mimeData()
-        self.term(str(mime.formats()))
-
-        
-    '''
-        if len(table.selectionModel().selectedIndexes()) > 0:
-            # sort select indexes into rows and columns
-            previous = table.selectionModel().selectedIndexes()[0]
-            columns = []
-            rows = []
-            for index in table.selectionModel().selectedIndexes():
-                if previous.column() != index.column():
-                    columns.append(rows)
-                    rows = []
-                rows.append(index.temp_data())
-                previous = index
-            columns.append(rows)
-            print (columns)
-        
-            # add rows and columns to clipboard            
-            clipboard = ""
-            nrows = len(columns[0])
-            ncols = len(columns)
-            for r in range(nrows):
-                for c in range(ncols):
-                    clipboard += columns[c][r]
-                    if c != (ncols-1):
-                        clipboard += '\t'
-                clipboard += '\n'
-
-            # copy to the system clipboard
-            sys_clip = QApplication.clipboard()
-            sys_clip.setText(clipboard)
-            self.term(str(pd.read_clipboard()))
-        '''
+        max_col = max(t_col) + 1
+        min_col = min(t_col)
+     
+        s = ""
+        for r in range(min_row, max_row):
+            #self.term(str(r))
+            for c in range(min_col, max_col):
+                #self.term(str(c))
+                try:
+                    s += str(table.item(r,c).text()) + "\t"
+                except AttributeError:
+                    s += "\t"
+            s = s[:-1] + "\n"
+        self.clip.setText(s)
+        self.term(str(self.clip.text()))
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ paste +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #def paste(self):
-    #    print("paste")
+    def paste(self):
+        global table
+        global temp_table
+        try:
+            first_row = self.row
+            first_col = self.col
+            #copied text is split by '\n' and '\t' to paste to the cells
+            for r, row in enumerate(self.clip.text().split('\n')):
+                for c, text in enumerate(row.split('\t')):
+                    table.setItem(first_row + r, first_col + c, QTableWidgetItem(text))
+                    for table_item in temp_table:
+                        if table_item[0] == first_row + r and table_item[1] == first_col + c:
+                            table_item[2] = str(table.item(first_row + r, first_col + c).text())
+                        else:
+                            temp_table.append([first_row + r, first_col + c, str(table.item(first_row + r, first_col + c).text()),'',[],[],''])
+                            break
+        except AttributeError:
+            pass
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ play +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def play(self):
         import os
@@ -467,22 +464,6 @@ class App(QMainWindow):
             os.startfile(l.text())
         except:
             pass
-        #s2 = self.link.encode(sys.getfilesystemencoding())
-        #self.term(str(s2))
-        #import sys
-        #filename = __file__.decode(sys.getfilesystemencoding())
-        #print (type(filename), filename)
-
-
-        #import os
-        #x = os.system(str(s2))
-        #print (x)
-        #os.system('"D:\\Drive\\Documents\\Sisma.exe"')
-        #os.system('"D:\\Drive\\Documents"')
-        #os.startfile(self.link)
-
-        #import webbrowser
-        #webbrowser.open('http://youtube.com', new=2)
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ Insert Row ++++++++++++++++++++++++++++++++++++++++++++++++++
     def insRow(self, indexRow = 0):
         global table
@@ -587,7 +568,6 @@ class App(QMainWindow):
                         if table_item[0] == item.row() and table_item[1] == item.column():
                             table_item[3] = font.toString()
                             exist = True
-
                     #if exist == False:
                     #    temp_table.append([self.row,self.col,'',font.toString(),[],[],'']) 
         except AttributeError:
@@ -602,7 +582,6 @@ class App(QMainWindow):
                     table.item(item.row(),item.column()).setForeground(QBrush(color))
                     for table_item in temp_table:
                         if table_item[0] == item.row() and table_item[1] == item.column():
-                            self.term(str(table_item))
                             table_item[5] = list(color.getRgb())
                 except AttributeError:
                     pass
@@ -635,6 +614,16 @@ class App(QMainWindow):
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ settings +++++++++++++++++++++++++++++++++++++++++++++++++++
     #def settings(self):
     #    print("settings")
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++ Clear +++++++++++++++++++++++++++++++++++++++++++++++++++++
+    def keyPressEvent(self, event):
+        global table
+        global temp_table
+        if event.key() == Qt.Key_Delete:
+            for item in table.selectedIndexes():
+                table.setItem(item.row(), item.column(), None)
+                for table_item in temp_table:
+                    if table_item[0] == item.row() and table_item[1] == item.column():
+                        temp_table = list(filter(partial(ne, table_item), temp_table))
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ showDate +++++++++++++++++++++++++++++++++++++++++++++++++++
     def showDate(self, date):
         self.CalLabel.setText(date.toString())
@@ -647,21 +636,33 @@ class App(QMainWindow):
     def alignLeft(self):
         global table
         try:
-            table.item(self.row, self.col).setTextAlignment(Qt.AlignLeft)
+            for item in table.selectedIndexes():
+                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignLeft)
+                for table_item in temp_table:
+                    if table_item[0] == item.row() and table_item[1] == item.column():
+                        table_item[6] = 'L'
         except AttributeError:
             pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ alignRight ++++++++++++++++++++++++++++++++++++++++++++++++++
     def alignRight(self):
         global table
         try:
-            table.item(self.row, self.col).setTextAlignment(Qt.AlignRight)
+            for item in table.selectedIndexes():
+                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignRight)
+                for table_item in temp_table:
+                    if table_item[0] == item.row() and table_item[1] == item.column():
+                        table_item[6] = 'R'
         except AttributeError:
             pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ alignCenter +++++++++++++++++++++++++++++++++++++++++++++++++
     def alignCenter(self):
         global table
         try:
-            table.item(self.row, self.col).setTextAlignment(Qt.AlignCenter)
+            for item in table.selectedIndexes():
+                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignCenter)
+                for table_item in temp_table:
+                    if table_item[0] == item.row() and table_item[1] == item.column():
+                        table_item[6] = 'C'
         except AttributeError:
             pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Toolbar Hide-Show +++++++++++++++++++++++++++++++++++++++++++++++
