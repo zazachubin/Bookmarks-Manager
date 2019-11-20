@@ -1,18 +1,15 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
-from objbrowser import browse
 import datetime
 import pickle
 import time
 import json
 import sys
-import pandas as pd
-from PyQt5.QtWidgets import QMainWindow, QApplication, QCalendarWidget, QRadioButton, QItemDelegate, QInputDialog, QHeaderView, QComboBox, QFileDialog, QColorDialog, QGroupBox, QDialog, QFontDialog, QPlainTextEdit, QProgressBar, QLineEdit, QSplitter, QLabel, QHeaderView, QSizePolicy, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QCalendarWidget, QRadioButton, QItemDelegate, QInputDialog, QHeaderView, QComboBox, QFileDialog, QColorDialog, QGroupBox, QDialog, QFontDialog, QPlainTextEdit, QProgressBar, QLineEdit, QSplitter, QLabel, QSizePolicy, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QIcon, QColor, QBrush
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt, QDate, QDir, QSettings
-from PyQt5.QtPrintSupport import QPrintDialog, QPrinter, QPrintPreviewDialog
 from functools import partial 
 from operator import ne
 # ---------------------------------------------------- Variables ---------------------------------------------------
@@ -304,6 +301,8 @@ class App(QMainWindow):
         self.tab1.setLayout(self.tab1.VlayoutTab1)
 # ----------------------------------------------------- call open --------------------------------------------------
         self.open()
+# ------------------------------------------------- Clear terminal -------------------------------------------------
+        terminal.clear()
 # ------------------------------------------------- Show main window -----------------------------------------------
         self.show()
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ status bar +++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -349,7 +348,6 @@ class App(QMainWindow):
             temp_table = temp_data['table']
             temp_config = temp_data['config']
 
-            
             for item in temp_table:
                 try:
                     newitem = QTableWidgetItem(item[2])
@@ -389,7 +387,7 @@ class App(QMainWindow):
                     pass
 
             for index in temp_Merge:
-                table.setSpan(index[0], index[1], index[2], index[3])    
+                table.setSpan(index[0], index[1], index[2], index[3])
                     
             table.setHeaders()
         except FileNotFoundError:
@@ -482,30 +480,26 @@ class App(QMainWindow):
                 temp_Merge[i][0] = temp_Merge[i][0] + 1            
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ TABLE EVENT ++++++++++++++++++++++++++++++++++++++++++++++++++
     def tabEvent(self):
-        global table
         global temp_table
-
-        '''
+        r = table.currentRow()
+        c = table.currentColumn()
         try:
-            item = table.item(self.row, self.col)
+            item = table.item(r, c)
             self.value = item.text()
             if self.value is not '':
+                add = False
                 for table_item in temp_table:
-                    exist = False
-                    if table_item[0] == self.row and table_item[1] == self.col:
-                        table_item[2] = self.value
-                        exist = True
-                #if exist == False:
-                #    temp_table.append([self.row,self.col,self.value,'',[],[],''])          
-            else:
-                for table_item in temp_table:
-                    if table_item[0] == self.row and table_item[1] == self.col:
-                        table_item[2] = ''
-                        if len(table_item[3]) == 0 and len(table_item[4]) == 0 and len(table_item[5]) == 0 and len(table_item[6]) == 0:
-                            temp_table = list(filter(partial(ne, table_item), temp_table))
+                    if table_item[0] == r and table_item[1] == c:
+                        table_item[2] = str(self.value)
+                        add = False
+                        break
+                    else:
+                        add = True
+                if add == True:
+                    temp_table.append([r,c,self.value,'',[],[],'C'])
+                    table.item(r, c).setTextAlignment(Qt.AlignCenter)
         except AttributeError:
             pass
-        '''
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Delete table Row ++++++++++++++++++++++++++++++++++++++++++++++++
     def delRow(self):
         global table
@@ -562,14 +556,9 @@ class App(QMainWindow):
             if ok:
                 for item in table.selectedIndexes():
                     table.item(item.row(), item.column()).setFont(font)
-
                     for table_item in temp_table:
-                        exist = False
                         if table_item[0] == item.row() and table_item[1] == item.column():
                             table_item[3] = font.toString()
-                            exist = True
-                    #if exist == False:
-                    #    temp_table.append([self.row,self.col,'',font.toString(),[],[],'']) 
         except AttributeError:
             pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ color +++++++++++++++++++++++++++++++++++++++++++++++++++++
