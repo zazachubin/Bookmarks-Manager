@@ -63,13 +63,34 @@ class Settings(QDialog):
         QDialog.__init__(self, parent)
         self.setWindowTitle("პარამეტრები")
         self.setWindowIcon(QtGui.QIcon("settings.png"))                     # Set main window icon
-        self.groupBox = QGroupBox("ენა")                                    # create groupbox with lane
-        self.groupBox.setAlignment(Qt.AlignCenter)
+
+        self.groupBox_language = QGroupBox("ენა")                                    # create groupbox with lane
+        self.groupBox_language.setAlignment(Qt.AlignCenter)
+
+        self.groupBox_window_size = QGroupBox("ფანჯრის ზომა")                                    # create groupbox with lane
+        self.groupBox_window_size.setAlignment(Qt.AlignCenter)
  
         VLbox = QVBoxLayout()
-        VLbox.addWidget(self.groupBox)
+        VLbox.addWidget(self.groupBox_language)
+        VLbox.addWidget(self.groupBox_window_size)
 
-        hboxLayout = QHBoxLayout()
+        hboxLayout_language = QHBoxLayout()
+        hboxLayout_size = QHBoxLayout()
+
+        self.Edit_length = QLineEdit()
+        self.Edit_width = QLineEdit()
+
+        self.Label_length = QLabel("სიგრძე")
+        self.Label_width = QLabel("სიგანე")
+
+        self.Edit_length.setText("1850")
+        self.Edit_width.setText("900")
+        
+        hboxLayout_size.addWidget(self.Label_length)
+        hboxLayout_size.addWidget(self.Edit_length)
+        hboxLayout_size.addWidget(self.Label_width)
+
+        hboxLayout_size.addWidget(self.Edit_width)
 
         self.radioButton1 = QRadioButton("ქართული")                       # create radiobutton1
         self.radioButton1.setChecked(True)                                 # set radiobutton1 as default ticked
@@ -77,12 +98,12 @@ class Settings(QDialog):
         self.radioButton1.setIconSize(QtCore.QSize(40,40))                 # set icon size
         #self.radioButton1.setFont(QtGui.QFont("Acadnusx",13))             # set radiobutton1 font and size
         self.radioButton1.toggled.connect(self.geo)                        # create radiobutton1 and "OnRadioBtn" function conection
-        hboxLayout.addWidget(self.radioButton1)                            # add radiobutton1 in horizontal layout
+        hboxLayout_language.addWidget(self.radioButton1)                            # add radiobutton1 in horizontal layout
 
         self.radioButton2 = QRadioButton("ინგლისური")                     # create radiobutton2
         self.radioButton2.setIcon(QtGui.QIcon("img/english.png"))          # set icon on radiobutton2
         self.radioButton2.setIconSize(QtCore.QSize(40,40))                 # set icon size
-        hboxLayout.addWidget(self.radioButton2)                            # add radiobutton2 in horizontal layout
+        hboxLayout_language.addWidget(self.radioButton2)                            # add radiobutton2 in horizontal layout
         self.radioButton2.toggled.connect(self.eng)
 
         self.ApplySet = QPushButton("დადასტურება",self)
@@ -90,9 +111,9 @@ class Settings(QDialog):
         self.ApplySet.clicked.connect(self.applySettings)
         self.CancelSet.clicked.connect(self.CancelSettings)
 
-        self.groupBox.setLayout(hboxLayout)                                # in group box set horizontal layout
+        self.groupBox_language.setLayout(hboxLayout_language)                                # in group box set horizontal layout
+        self.groupBox_window_size.setLayout(hboxLayout_size)                                # in group box set horizontal layout
 
-        VLbox.addWidget(self.groupBox)
         VLbox.addWidget(self.ApplySet)
         VLbox.addWidget(self.CancelSet)
 
@@ -127,7 +148,14 @@ class TableView(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
         self.setSortingEnabled(False)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.setColumnWidth(0,500)
+        self.setColumnWidth(1,120)
+        self.setColumnWidth(2,120)
+        self.setColumnWidth(4,500)
+        self.setColumnWidth(5,360)
+        self.setWordWrap(True)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ setHeaders +++++++++++++++++++++++++++++++++++++++++++++++++++
     def setHeaders(self):
         self.setHorizontalHeaderLabels(temp_header)
@@ -140,10 +168,10 @@ class App(QMainWindow):
         QMainWindow.__init__(self,None)
 # -------------------------------------------------- Initialization ------------------------------------------------
         self.title = 'Bookmarks'                                           # create main window title
-        self.top = 100                                                 # create pixel distance variable from top
-        self.left = 100                                                # create pixel distance variable from left side
-        self.width = 1600                                              # create window width
-        self.height = 800                                              # create window height
+        self.top = 50                                                 # create pixel distance variable from top
+        self.left = 30                                                # create pixel distance variable from left side
+        self.Edit_width = 1850                                              # create window Edit_width
+        self.height = 900                                              # create window height
         self.initUI()                                                  # Run initialization User Interface
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ initUI ++++++++++++++++++++++++++++++++++++++++++++++++++++
     def initUI(self):
@@ -154,7 +182,7 @@ class App(QMainWindow):
 # ------------------------------------------------- Main window icon -----------------------------------------------
         self.setWindowTitle(self.title)                                # call method which sets window title
         self.setWindowIcon(QtGui.QIcon("img/link.png"))             # Set main window icon
-        self.setGeometry(self.left, self.top, self.width, self.height) # Set geometry of main window
+        self.setGeometry(self.left, self.top, self.Edit_width, self.height) # Set geometry of main window
 # --------------------------------------------------- Create Menu --------------------------------------------------
         mainMenu = self.menuBar()                                      # Create menu
 # ------------------------------------------------ create menu options ---------------------------------------------
@@ -265,18 +293,20 @@ class App(QMainWindow):
         self.tabs = QTabWidget()
         self.tab1 = QWidget()
         self.tab2 = QWidget()
-        self.tab3 = QWidget()
 # -------------------------------------------------- add tab pages -------------------------------------------------
 # ---------------------------------------------------- Add tabs ----------------------------------------------------
         self.tabs.addTab(self.tab1, "მიმდინარე")
+        self.tabs.addTab(self.tab2, "ტერმინალი")
         self.setCentralWidget(self.tabs)
 # ------------------------------------------------ set tab1 layouts ------------------------------------------------
-        self.tab1.VlayoutTab1 = QVBoxLayout()
+        self.VlayoutTab1 = QVBoxLayout()
         self.HlayoutTab1 = QHBoxLayout()
+# ------------------------------------------------ set tab2 layouts ------------------------------------------------
+        self.VlayoutTab2 = QVBoxLayout()
 # ----------------------------------- create table widget and add on vertical layut --------------------------------
         global table
         table = TableView(temp_data, 500, len(temp_header))                             # fixed size table
-        self.tab1.VlayoutTab1.addWidget(table)                            # add table in vertival layout of tab1
+        self.VlayoutTab1.addWidget(table)                            # add table in vertival layout of tab1
 # -------------------------------------------- selectred cell activation -------------------------------------------
         table.clicked.connect(self.Row)
         table.clicked.connect(self.Column)    
@@ -288,17 +318,19 @@ class App(QMainWindow):
         self.HlayoutTab1.addWidget(self.pushButton1)
         self.pushButton1.clicked.connect(self.A)
 # ------------------------------------------------- create B button ------------------------------------------------
-        self.pushButton2 = QPushButton("შაბლონის შენახვა")
-        self.HlayoutTab1.addWidget(self.pushButton2)
-        self.pushButton2.clicked.connect(self.B)
+        #self.pushButton2 = QPushButton("შაბლონის შენახვა")
+        #self.HlayoutTab1.addWidget(self.pushButton2)
+        #self.pushButton2.clicked.connect(self.B)
 #------------------------------------------------------ Terminal ---------------------------------------------------
         global terminal
         terminal = QPlainTextEdit(self)
-        terminal.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        self.tab1.VlayoutTab1.addWidget(terminal)
+        #terminal.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self.VlayoutTab2.addWidget(terminal)
 # ------------------------------------------------- set tab 1 layout  ----------------------------------------------
-        self.tab1.VlayoutTab1.addLayout(self.HlayoutTab1)
-        self.tab1.setLayout(self.tab1.VlayoutTab1)
+        self.VlayoutTab1.addLayout(self.HlayoutTab1)
+        self.tab1.setLayout(self.VlayoutTab1)
+# ------------------------------------------------- set tab 2 layout  ----------------------------------------------
+        self.tab2.setLayout(self.VlayoutTab2)
 # ----------------------------------------------------- call open --------------------------------------------------
         self.open()
 # ------------------------------------------------- Clear terminal -------------------------------------------------
@@ -487,17 +519,20 @@ class App(QMainWindow):
             item = table.item(r, c)
             self.value = item.text()
             if self.value is not '':
-                add = False
-                for table_item in temp_table:
-                    if table_item[0] == r and table_item[1] == c:
-                        table_item[2] = str(self.value)
-                        add = False
-                        break
-                    else:
-                        add = True
-                if add == True:
+                if len(temp_table) == 0:
                     temp_table.append([r,c,self.value,'',[],[],'C'])
-                    table.item(r, c).setTextAlignment(Qt.AlignCenter)
+                else:
+                    add = False
+                    for table_item in temp_table:
+                        if table_item[0] == r and table_item[1] == c:
+                            table_item[2] = str(self.value)
+                            add = False
+                            break
+                        else:
+                            add = True
+                    if add == True:
+                        temp_table.append([r,c,self.value,'',[],[],'C'])
+                        table.item(r, c).setTextAlignment(Qt.AlignCenter)
         except AttributeError:
             pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Delete table Row ++++++++++++++++++++++++++++++++++++++++++++++++
