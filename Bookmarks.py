@@ -15,7 +15,7 @@ from operator import ne
 # ---------------------------------------------------- Variables ---------------------------------------------------
 data = {'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
         'Merge' : [[0, 0, 1, 6],[2, 0, 1, 6],[4, 0, 1, 6]],
-        'config': {'tableColNumber' : 6,'language' : 'georgian'},
+        'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
         'table' : [[0,0,'LabVIEW','',[190, 192, 200, 255],[],'C'],
                    [1,0,'Labview tutorial Enable integration','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
                    [1,1,'42','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
@@ -48,7 +48,7 @@ col = 0
 OpenPath = ""
 # ------------------------------------------------- Temporary data -------------------------------------------------
 temp_data = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
-              'config': {'tableColNumber' : 6,'language' : 'georgian'},
+              'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
               'Merge':[], 
               'table':[] }
 temp_header = temp_data['header']
@@ -132,9 +132,13 @@ class Settings(QDialog):
             App.term(self,langvage)
 # +++++++++++++++++++++++++++++++++++++++++++++++++ Apply Settings +++++++++++++++++++++++++++++++++++++++++++++++++
     def applySettings(self):
-        global config
+        #global config
+        global temp_data
+        global temp_config
         config = "კონფიგურაცია დასრულდა"
         App.term(self,config)
+        temp_data['config']['length'] = int(self.Edit_length.text())
+        temp_data['config']['width'] = int(self.Edit_width.text())
         self.close()
 # +++++++++++++++++++++++++++++++++++++++++++++++++ Cancel Settings ++++++++++++++++++++++++++++++++++++++++++++++++
     def CancelSettings(self):
@@ -351,6 +355,7 @@ class App(QMainWindow):
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ A +++++++++++++++++++++++++++++++++++++++++++++++++++++++
     def A(self):
         self.term(str(temp_header))
+        self.term(str(temp_data['config'])) 
         self.term(str(temp_Merge))
         self.term(str(temp_table))
         self.term(str(len(temp_table)))
@@ -369,11 +374,11 @@ class App(QMainWindow):
         global temp_table
         global temp_config
         global OpenPath
-
         global temp_data
+
         try:
-            with open('data.pkl', 'rb') as f:
-                temp_data = pickle.load(f)
+            with open('data.json', 'r') as f:
+                temp_data = json.load(f)
 
             temp_header = temp_data['header']
             temp_Merge = temp_data['Merge']
@@ -427,15 +432,15 @@ class App(QMainWindow):
             self.open()
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Save +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def save(self):
-        with open('data.pkl', 'wb') as f:
+        global temp_data
+        
+        with open('data.json', 'w') as outfile:
             temp_data['header'] = temp_header
             temp_data['Merge'] = temp_Merge
             temp_data['table'] = temp_table
+            temp_data['config'] = temp_config
 
-            pickle.dump(temp_data, f)
-
-        with open('data.txt', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+            json.dump(temp_data, outfile, indent=4)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ copy +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def copy(self):
         global table
