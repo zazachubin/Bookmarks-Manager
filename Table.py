@@ -12,6 +12,7 @@ class TableView(QTableWidget):
     def __init__(self, temp_data, *args):
         QTableWidget.__init__(self, *args)
         self.temp_data = temp_data
+        self.selected_items = []
         self.setHeaders()
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
@@ -204,11 +205,30 @@ class TableView(QTableWidget):
                 for item in self.temp_data['table']:
                     if item[0] == self.currentRow() and item[1] == self.currentColumn():
                         self.temp_data['table'].remove(item)
-            
         except AttributeError:
             pass
         #print("row--> {} && col --> {}".format(self.currentRow(), self.currentColumn()))
         #print("data>>> {}".format(self.temp_data['table']))
+    def calculations(self,temp_data):
+        self.temp_data = temp_data
+        calc_col2 = []
+        for item in self.temp_data['table']:
+            if item[1] == 2 and item[2] != None:
+                #print(str(int(item[2])/int(item[1])*100) + "%")
+                if ":" in item[2]:
+                #calc_col2.append(int())
+                    print(item[2])
+                    print("yes")
+                    #print(str(int(item[2])/int(item[1])*100) + "%")
+                #newitem = QTableWidgetItem(str(int(item[2])/int(item[1])*100) + "%")
+        #self.setItem(1, 3, newitem)
+
+        #for item in self.temp_data['table']:
+        #    try:
+        #        #newitem = QTableWidgetItem(str(int(item[2])/int(item[1])*100) + "%")
+        #        newitem = QTableWidgetItem("yes")
+        #        self.setItem(1, 3, newitem)
+        #        #self.setItem(item[0], 3, newitem)
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ Clear +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
@@ -297,6 +317,44 @@ class TableView(QTableWidget):
             self.setSpan(index[0], index[1], index[2], index[3])
                 
         self.setHeaders()
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++ Finde item ++++++++++++++++++++++++++++++++++++++++++++++++++
+    def find_items(self, text):
+        if text != "":
+            if len(self.selected_items) != 0:
+                for item in self.selected_items:
+                    CellBgColor = QtGui.QColor(0,0,0,0)
+                    self.item(item.row(), item.column()).setBackground(CellBgColor)
+            for item in self.temp_data['table']:
+                try:
+                    CellBgColor = QtGui.QColor(item[4][0],item[4][1],item[4][2],item[4][3])
+                    self.item(item[0], item[1]).setBackground(CellBgColor)
+                except IndexError:
+                    pass
+            self.selected_items = self.findItems(text, QtCore.Qt.MatchContains)
+
+            selected_items_rowArr = []
+            for item in self.selected_items:
+                selected_items_rowArr.append(item.row())
+
+            if len(selected_items_rowArr) != 0:
+                startItemRow = min(selected_items_rowArr)
+                self.selectRow(startItemRow)
+
+            for item in self.selected_items:
+                CellBgColor = QtGui.QColor(255,0,0,255)
+                self.item(item.row(), item.column()).setBackground(CellBgColor)
+        else:
+            if len(self.selected_items) != 0:
+                for item in self.selected_items:
+                    CellBgColor = QtGui.QColor(0,0,0,0)
+                    self.item(item.row(), item.column()).setBackground(CellBgColor)
+            for item in self.temp_data['table']:
+                try:
+                    CellBgColor = QtGui.QColor(item[4][0],item[4][1],item[4][2],item[4][3])
+                    self.item(item[0], item[1]).setBackground(CellBgColor)
+                except IndexError:
+                    pass
+        return len(self.selected_items)
 ############################################################################################################
 if __name__ == '__main__':
     temp_data = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
@@ -307,8 +365,8 @@ if __name__ == '__main__':
     #diag.exec_()
     #print (diag.applySettings())
     #print(ex.Row())
-    ex = App('Bookmarks',50,30,1850,900,"img/link.png")
+    #ex = App('Bookmarks',50,30,1850,900,"img/link.png")
     ex = TableView(temp_data)
-    ex.setCentralWidget(table)
+    #ex.setCentralWidget(table)
     ex.show()
     sys.exit(app.exec_())

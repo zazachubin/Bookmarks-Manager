@@ -36,7 +36,7 @@ data = {'header': ['დასახელება','მიმდინარე
                    [6,4,r'D:\Library\ამაჩქარებლები\EPD ამაჩქარლების ფიზიკა.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}
 tt = True
 ts = True
-temp_data = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
+temp_data = { 'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
               'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
               'Merge':[],
               'table':[] }
@@ -82,7 +82,7 @@ class App(QMainWindow):
 # ------------------------------------------------------- copy -----------------------------------------------------
         copyAct = QAction(QIcon('img/copy.png'),'ასლი', self)              # create Copy button in toolBar
         copyAct.setShortcut("Ctrl+C")                                      # key manipulation of Copy button
-        copyAct.triggered.connect(lambda : self.table.table.copy())        # run function
+        copyAct.triggered.connect(lambda : self.table.copy())        # run function
 # ------------------------------------------------------ paste -----------------------------------------------------
         pasteAct = QAction(QIcon('img/paste.png'),'ჩაკვრა', self)           # create paste button in toolBar
         pasteAct.setShortcut("Ctrl+V")                                     # key manipulation of paste button
@@ -130,6 +130,9 @@ class App(QMainWindow):
         saveTemplateAct = QAction(QIcon('img/template.png'), 'მონაცემთა შაბლონი', self)  # create Font button in toolBar
         saveTemplateAct.triggered.connect(self.dataTemplate)                              # run function
         saveTemplateAct.triggered.connect(lambda : self.table.openData(temp_data))        # run function
+# ------------------------------------------------------ Test ------------------------------------------------------
+        testAct = QAction(QIcon('img/test.png'), 'ტესტი', self)  # create Test button in toolBar
+        testAct.triggered.connect(lambda : self.table.calculations(temp_data))                                      # run function
 # ------------------------------------------- add buttons on first toolbar -----------------------------------------
         self.toolbar = self.addToolBar('Tools')
         self.toolbar.addAction(exitAct)
@@ -156,6 +159,7 @@ class App(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(printAct)
         self.toolbar.addAction(saveTemplateAct)
+        self.toolbar.addAction(testAct)
         self.addToolBarBreak()
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.addToolBar(Qt.TopToolBarArea , self.toolbar)
@@ -178,6 +182,22 @@ class App(QMainWindow):
 # ------------------------------------------------ set tab3 layouts ------------------------------------------------
         self.tab3.VlayoutTab3 = QVBoxLayout()
         self.HlayoutTab3 = QHBoxLayout()
+# ----------------------------------------------------- Search -----------------------------------------------------
+        self.HlayoutSearch = QHBoxLayout()
+        self.search_line = QtWidgets.QLineEdit()
+        self.search_but = QtWidgets.QPushButton("ძებნა")
+        self.search_next = QtWidgets.QPushButton("შემდეგი")
+        self.searchInfoLabel = QLabel("    ")
+        self.searchInfoLabel.setText("0")
+        self.search_but.clicked.connect(lambda : self.searchInfoLabel.setText(str(self.table.find_items(self.search_line.text()))))
+        self.search_next.clicked.connect(lambda : self.table.find_items(self.search_line.text()))
+
+        self.HlayoutSearch.addWidget(self.search_line)
+        self.HlayoutSearch.addWidget(self.search_but)
+        self.HlayoutSearch.addWidget(self.search_next)
+        self.HlayoutSearch.addWidget(self.searchInfoLabel)
+
+        self.VlayoutTab1.addLayout(self.HlayoutSearch)
 # ----------------------------------- create table widget and add on vertical layut --------------------------------
         self.table = TableView(temp_data, 500, len(temp_data['header']))
         self.table.openData(temp_data)
@@ -295,6 +315,9 @@ class App(QMainWindow):
         self.term(str(temp_data['config']))
         self.statusBarMessage("პარამეტრები")
         self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"]))
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Test +++++++++++++++++++++++++++++++++++++++++++++++++++++
+    def test(self):
+        print("Test")
 ####################################################################################################################
 if __name__ == '__main__':
     app = QApplication(sys.argv)
