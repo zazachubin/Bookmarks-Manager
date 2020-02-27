@@ -1,18 +1,15 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5 import *
+from Table import TableView
 import datetime
-import pickle
-import time
 import json
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QCalendarWidget, QRadioButton, QItemDelegate, QInputDialog, QHeaderView, QComboBox, QFileDialog, QColorDialog, QGroupBox, QDialog, QFontDialog, QPlainTextEdit, QProgressBar, QLineEdit, QSplitter, QLabel, QSizePolicy, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QIcon, QColor, QBrush
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import Qt, QDate, QDir, QSettings
-from functools import partial 
-from operator import ne
-# ---------------------------------------------------- Variables ---------------------------------------------------
+
 data = {'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
         'Merge' : [[0, 0, 1, 6],[2, 0, 1, 6],[4, 0, 1, 6]],
         'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
@@ -38,234 +35,101 @@ data = {'header': ['დასახელება','მიმდინარე
                    [6,2,'366','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
                    [6,4,r'D:\Library\ამაჩქარებლები\EPD ამაჩქარლების ფიზიკა.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}
 tt = True
-tf = True
 ts = True
-table = ""
-langvage = "ქართული"
-config = ""
-progressBar = []
-col = 0
-OpenPath = ""
-# ------------------------------------------------- Temporary data -------------------------------------------------
 temp_data = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
               'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
-              'Merge':[], 
+              'Merge':[],
               'table':[] }
-temp_header = temp_data['header']
-temp_Merge = temp_data['Merge']
-temp_table = temp_data['table']
-temp_config = temp_data['config']
-# ------------------------------------------------------------------------------------------------------------------
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Settings Dialog ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class Settings(QDialog):
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def __init__(self,parent = None):
-        QDialog.__init__(self, parent)
-        self.setWindowTitle("პარამეტრები")
-        self.setWindowIcon(QtGui.QIcon("settings.png"))                     # Set main window icon
-
-        self.groupBox_language = QGroupBox("ენა")                                    # create groupbox with lane
-        self.groupBox_language.setAlignment(Qt.AlignCenter)
-
-        self.groupBox_window_size = QGroupBox("ფანჯრის ზომა")                                    # create groupbox with lane
-        self.groupBox_window_size.setAlignment(Qt.AlignCenter)
- 
-        VLbox = QVBoxLayout()
-        VLbox.addWidget(self.groupBox_language)
-        VLbox.addWidget(self.groupBox_window_size)
-
-        hboxLayout_language = QHBoxLayout()
-        hboxLayout_size = QHBoxLayout()
-
-        self.Edit_length = QLineEdit()
-        self.Edit_width = QLineEdit()
-
-        self.Label_length = QLabel("სიგრძე")
-        self.Label_width = QLabel("სიგანე")
-
-        self.Edit_length.setText("1850")
-        self.Edit_width.setText("900")
-        
-        hboxLayout_size.addWidget(self.Label_length)
-        hboxLayout_size.addWidget(self.Edit_length)
-        hboxLayout_size.addWidget(self.Label_width)
-
-        hboxLayout_size.addWidget(self.Edit_width)
-
-        self.radioButton1 = QRadioButton("ქართული")                       # create radiobutton1
-        self.radioButton1.setChecked(True)                                 # set radiobutton1 as default ticked
-        self.radioButton1.setIcon(QtGui.QIcon("img/georgia.png"))          # set icon on radiobutton1
-        self.radioButton1.setIconSize(QtCore.QSize(40,40))                 # set icon size
-        #self.radioButton1.setFont(QtGui.QFont("Acadnusx",13))             # set radiobutton1 font and size
-        self.radioButton1.toggled.connect(self.geo)                        # create radiobutton1 and "OnRadioBtn" function conection
-        hboxLayout_language.addWidget(self.radioButton1)                            # add radiobutton1 in horizontal layout
-
-        self.radioButton2 = QRadioButton("ინგლისური")                     # create radiobutton2
-        self.radioButton2.setIcon(QtGui.QIcon("img/english.png"))          # set icon on radiobutton2
-        self.radioButton2.setIconSize(QtCore.QSize(40,40))                 # set icon size
-        hboxLayout_language.addWidget(self.radioButton2)                            # add radiobutton2 in horizontal layout
-        self.radioButton2.toggled.connect(self.eng)
-
-        self.ApplySet = QPushButton("დადასტურება",self)
-        self.CancelSet = QPushButton("გაუქმება",self)
-        self.ApplySet.clicked.connect(self.applySettings)
-        self.CancelSet.clicked.connect(self.CancelSettings)
-
-        self.groupBox_language.setLayout(hboxLayout_language)                                # in group box set horizontal layout
-        self.groupBox_window_size.setLayout(hboxLayout_size)                                # in group box set horizontal layout
-
-        VLbox.addWidget(self.ApplySet)
-        VLbox.addWidget(self.CancelSet)
-
-        self.setLayout(VLbox)
-# ++++++++++++++++++++++++++++++++++++++++++++ Georgian language option ++++++++++++++++++++++++++++++++++++++++++++
-    def geo(self):
-        if self.radioButton1.isChecked():
-            global langvage
-            langvage = "ქართული"
-            App.term(self,langvage)
-# +++++++++++++++++++++++++++++++++++++++++++++ English language option ++++++++++++++++++++++++++++++++++++++++++++
-    def eng(self):
-        if self.radioButton2.isChecked():
-            global langvage
-            langvage = "ინგლისური"
-            App.term(self,langvage)
-# +++++++++++++++++++++++++++++++++++++++++++++++++ Apply Settings +++++++++++++++++++++++++++++++++++++++++++++++++
-    def applySettings(self):
-        #global config
-        global temp_data
-        global temp_config
-        config = "კონფიგურაცია დასრულდა"
-        App.term(self,config)
-        temp_data['config']['length'] = int(self.Edit_length.text())
-        temp_data['config']['width'] = int(self.Edit_width.text())
-        self.close()
-# +++++++++++++++++++++++++++++++++++++++++++++++++ Cancel Settings ++++++++++++++++++++++++++++++++++++++++++++++++
-    def CancelSettings(self):
-        self.close()
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TableView ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class TableView(QTableWidget):
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ ++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def __init__(self, temp_data, *args):
-        QTableWidget.__init__(self, *args)
-        self.setHeaders()
-        self.resizeColumnsToContents()
-        self.resizeRowsToContents()
-        self.setSortingEnabled(False)
-        self.setColumnWidth(0,500)
-        self.setColumnWidth(1,120)
-        self.setColumnWidth(2,120)
-        self.setColumnWidth(4,500)
-        self.setColumnWidth(5,360)
-        self.setWordWrap(True)
-        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++ setHeaders +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def setHeaders(self):
-        self.setHorizontalHeaderLabels(temp_header)
-# ==================================================================================================================
-# ==================================================================================================================
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Main window App Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class App(QMainWindow):
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def __init__(self):
+    def __init__(self,title,top,left,iconPath):
         QMainWindow.__init__(self,None)
 # -------------------------------------------------- Initialization ------------------------------------------------
-        self.title = 'Bookmarks'                                           # create main window title
-        self.top = 50                                                 # create pixel distance variable from top
-        self.left = 30                                                # create pixel distance variable from left side
-        self.Edit_width = 1850                                              # create window Edit_width
-        self.height = 900                                              # create window height
+        self.title = title                                       # create main window title
+        self.top = top                                                 # window ofset distance from top
+        self.left = left                                               # window ofset distance from left side
+        self.iconPath = iconPath                                       # main window icon
+        self.importData('data.json')                                   # import data from file
         self.initUI()                                                  # Run initialization User Interface
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ initUI ++++++++++++++++++++++++++++++++++++++++++++++++++++
     def initUI(self):
         QMainWindow.__init__(self)
+        self.setWindowTitle(self.title)                                # sets window title
+        self.setWindowIcon(QtGui.QIcon(self.iconPath))                 # Set main window icon
+        self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"])) # set window size
 #----------------------------------------------- set date on status ber --------------------------------------------
-        now = datetime.datetime.now()
-        self.statusBar().showMessage(now.strftime("%d-%m-%Y"))
-# ------------------------------------------------- Main window icon -----------------------------------------------
-        self.setWindowTitle(self.title)                                # call method which sets window title
-        self.setWindowIcon(QtGui.QIcon("img/link.png"))             # Set main window icon
-        self.setGeometry(self.left, self.top, self.Edit_width, self.height) # Set geometry of main window
+        now = datetime.datetime.now()                                  # read date
+        self.statusBar().showMessage(now.strftime("%d-%m-%Y"))         # set date to statusBar
 # --------------------------------------------------- Create Menu --------------------------------------------------
         mainMenu = self.menuBar()                                      # Create menu
 # ------------------------------------------------ create menu options ---------------------------------------------
-        viewMenu = mainMenu.addMenu('ინტერფეისი')
-
-        toggleTool = QAction("ინსტრუმენტთა ველი 1",self,checkable=True)
-        toggleTool.triggered.connect(self.handleToggleTool)
-
-        toggleStatus = QAction("Toggle Statusbar",self,checkable=True)
-        toggleStatus.triggered.connect(self.handleToggleStatus)
- 
-        viewMenu.addAction(toggleTool)
+        viewMenu = mainMenu.addMenu('ინტერფეისი')                         # create menu section
+        toggleTool = QAction("ინსტრუმენტთა ველი 1",self,checkable=True)  # create menu option
+        toggleTool.triggered.connect(self.handleToggleTool)                # choose menu oprion
+        toggleStatus = QAction("Toggle Statusbar",self,checkable=True)     # create menu option
+        toggleStatus.triggered.connect(self.handleToggleStatus)            # choose menu oprion
+        viewMenu.addAction(toggleTool)                                     # set menu oprion
 # ----------------------------------------------------- ToolBar ----------------------------------------------------
 # -------------------------------------------------- Exit toolbar --------------------------------------------------
-        exitAct = QAction(QIcon('img/close.png'),'გასვლა', self)
-        exitAct.setShortcut('Ctrl+Q')
-        exitAct.triggered.connect(app.quit)
+        exitAct = QAction(QIcon('img/close.png'),'გასვლა', self)           # create exit button in toolBar
+        exitAct.setShortcut('Ctrl+Q')                                      # key manipulation of exit button
+        exitAct.triggered.connect(app.quit)                                # run quit function
 #-------------------------------------------------------- Save -----------------------------------------------------
 # --------------------------------------------------- Save toolbar -------------------------------------------------
-        saveAct = QAction(QIcon('img/save.png'),'შენახვა', self)
-        saveAct.setShortcut("Ctrl+S")
-        saveAct.triggered.connect(lambda: self.term('შენახვა'))
-        saveAct.triggered.connect(self.save)
+        saveAct = QAction(QIcon('img/save.png'),'შენახვა', self)            # create Save button in toolBar
+        saveAct.setShortcut("Ctrl+S")                                      # key manipulation of save button
+        saveAct.triggered.connect(lambda : self.save('data.json'))         # run function
 # ------------------------------------------------------- copy -----------------------------------------------------
-        copyAct = QAction(QIcon('img/copy.png'),'ასლი', self)
-        copyAct.setShortcut("Ctrl+C")
-        copyAct.triggered.connect(lambda: self.term('ასლი'))
-        copyAct.triggered.connect(self.copy)
+        copyAct = QAction(QIcon('img/copy.png'),'ასლი', self)              # create Copy button in toolBar
+        copyAct.setShortcut("Ctrl+C")                                      # key manipulation of Copy button
+        copyAct.triggered.connect(lambda : self.table.table.copy())        # run function
 # ------------------------------------------------------ paste -----------------------------------------------------
-        pasteAct = QAction(QIcon('img/paste.png'),'ჩაკვრა', self)
-        pasteAct.setShortcut("Ctrl+V")
-        pasteAct.triggered.connect(lambda: self.term('ჩაკვრა'))
-        pasteAct.triggered.connect(self.paste)
+        pasteAct = QAction(QIcon('img/paste.png'),'ჩაკვრა', self)           # create paste button in toolBar
+        pasteAct.setShortcut("Ctrl+V")                                     # key manipulation of paste button
+        pasteAct.triggered.connect(lambda : self.table.paste())            # run function
 # ------------------------------------------------------- play -----------------------------------------------------
-        playAct = QAction(QIcon('img/play.png'),'გაშვება', self)
-        playAct.setShortcut("Ctrl+P")
-        playAct.triggered.connect(lambda: self.term('გაშვება'))
-        playAct.triggered.connect(self.play)
+        playAct = QAction(QIcon('img/play.png'),'გაშვება', self)            # create play button in toolBar
+        playAct.setShortcut("Ctrl+P")                                      # key manipulation of play button
+        playAct.triggered.connect(self.play)                               # run function
 #--------------------------------------------- Row - Column manipulation -------------------------------------------
 # ------------------------------------------------ insert Row toolbar ----------------------------------------------
-        insRowAct = QAction(QIcon('img/addRow.png'), 'სტრიქონის დამატება', self)
-        insRowAct.triggered.connect(self.insRow)
-        insRowAct.triggered.connect(lambda: self.term("სტრიქონის დამატება"))
+        insRowAct = QAction(QIcon('img/addRow.png'), 'სტრიქონის დამატება', self) # create addRow button in toolBar
+        insRowAct.triggered.connect(lambda : self.table.insRow())                # run function
 # ------------------------------------------------ Delete Row toolbar ----------------------------------------------
-        DelRowAct = QAction(QIcon('img/DelRow.png'), 'სტრიქონის წაშლა', self)
-        DelRowAct.triggered.connect(self.delRow)
-        DelRowAct.triggered.connect(lambda: self.term("სტრიქონის წაშლა"))
+        DelRowAct = QAction(QIcon('img/DelRow.png'), 'სტრიქონის წაშლა', self)    # create delRow button in toolBar
+        DelRowAct.triggered.connect(lambda : self.table.delRow())                 # run function
 # ------------------------------------------------------ Menge -----------------------------------------------------
-        mergeAct = QAction(QIcon('img/merge.png'), 'შერწყმა', self)
-        mergeAct.triggered.connect(lambda: self.term('შერწყმა'))
-        mergeAct.triggered.connect(self.merge)
+        mergeAct = QAction(QIcon('img/merge.png'), 'შერწყმა', self)               # create Merge button in toolBar
+        mergeAct.triggered.connect(lambda : self.table.merge())                   # run function
 #-------------------------------------------------------- Font -----------------------------------------------------
 # --------------------------------------------------- Font toolbar -------------------------------------------------
-        FontAct = QAction(QIcon('img/Font.png'), 'ფონტები', self)
-        FontAct.triggered.connect(lambda: self.term('ფონტები'))
-        FontAct.triggered.connect(self.font)
+        FontAct = QAction(QIcon('img/Font.png'), 'ფონტები', self)                # create Font button in toolBar
+        FontAct.triggered.connect(lambda : self.table.font())                     # run function
 # --------------------------------------------------- color palete -------------------------------------------------
-        colorAct = QAction(QIcon('img/color.png'), 'ტექსტის ფერები', self)
-        colorAct.triggered.connect(lambda: self.term('ფერები'))
-        colorAct.triggered.connect(self.color)
+        colorAct = QAction(QIcon('img/color.png'), 'ტექსტის ფერები', self)       # create Font button in toolBar
+        colorAct.triggered.connect(lambda : self.table.color())                  # run function
 # ------------------------------------------------- background color -----------------------------------------------
-        backColorAct = QAction(QIcon("img/background-color.png"),"ფონის ფერი",self)
-        backColorAct.triggered.connect(self.FontBackColor)
+        backColorAct = QAction(QIcon("img/background-color.png"),"ფონის ფერი",self)  # create Font button in toolBar
+        backColorAct.triggered.connect(lambda : self.table.FontBackColor())           # run function
 # ---------------------------------------------------- alignLeft  --------------------------------------------------
-        alignLeftAct = QAction(QIcon('img/alignLeft.png'), 'ტექსტი მარცხნივ', self)
-        alignLeftAct.triggered.connect(self.alignLeft)
-        alignLeftAct.triggered.connect(lambda: self.term("ტექსტი მარცხნივ"))
+        alignLeftAct = QAction(QIcon('img/alignLeft.png'), 'ტექსტი მარცხნივ', self)  # create Font button in toolBar
+        alignLeftAct.triggered.connect(lambda : self.table.alignLeft())              # run function
 # ---------------------------------------------------- alignRight  -------------------------------------------------
-        alignRightAct = QAction(QIcon('img/alignRight.png'), 'ტექსტი მარჯვნივ', self)
-        alignRightAct.triggered.connect(self.alignRight)
-        alignRightAct.triggered.connect(lambda: self.term("ტექსტი მარჯვნივ"))
+        alignRightAct = QAction(QIcon('img/alignRight.png'), 'ტექსტი მარჯვნივ', self) # create Font button in toolBar
+        alignRightAct.triggered.connect(lambda : self.table.alignRight())             # run function
 # --------------------------------------------------- alignCenter  -------------------------------------------------
         alignCenterAct = QAction(QIcon('img/alignCenter.png'), 'ტექსტი ცენტრში', self)
-        alignCenterAct.triggered.connect(self.alignCenter)
-        alignCenterAct.triggered.connect(lambda: self.term("ტექსტი ცენტრში"))
+        alignCenterAct.triggered.connect(lambda : self.table.alignCenter())
 # ---------------------------------------------------- settings  ---------------------------------------------------
-        settingsAct = QAction(QIcon('img/settings.png'), 'პარამეტრები', self)
-        settingsAct.triggered.connect(lambda: self.term("პარამეტრები"))
-        settingsAct.triggered.connect(Settings(self).show)
+        settingsAct = QAction(QIcon('img/settings.png'), 'პარამეტრები', self)         # create Font button in toolBar
+        settingsAct.triggered.connect(self.settings)                                  # run function
+# ---------------------------------------------- Print data structure ----------------------------------------------
+        printAct = QAction(QIcon('img/print.png'), 'მონაცემთა დაბეჭვდა', self)        # create Font button in toolBar
+        printAct.triggered.connect(self.printData)                                    # run function
+# ----------------------------------------------- save data template -----------------------------------------------
+        saveTemplateAct = QAction(QIcon('img/template.png'), 'მონაცემთა შაბლონი', self)  # create Font button in toolBar
+        saveTemplateAct.triggered.connect(self.dataTemplate)                              # run function
+        saveTemplateAct.triggered.connect(lambda : self.table.openData(temp_data))        # run function
 # ------------------------------------------- add buttons on first toolbar -----------------------------------------
         self.toolbar = self.addToolBar('Tools')
         self.toolbar.addAction(exitAct)
@@ -289,411 +153,69 @@ class App(QMainWindow):
         self.toolbar.addAction(alignCenterAct)
         self.toolbar.addSeparator()
         self.toolbar.addAction(settingsAct)
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(printAct)
+        self.toolbar.addAction(saveTemplateAct)
         self.addToolBarBreak()
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.addToolBar(Qt.TopToolBarArea , self.toolbar)
-# ------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------ Create tabs widget ----------------------------------------------
         self.tabs = QTabWidget()
         self.tab1 = QWidget()
         self.tab2 = QWidget()
+        self.tab3 = QWidget()
 # -------------------------------------------------- add tab pages -------------------------------------------------
 # ---------------------------------------------------- Add tabs ----------------------------------------------------
         self.tabs.addTab(self.tab1, "მიმდინარე")
         self.tabs.addTab(self.tab2, "ტერმინალი")
         self.setCentralWidget(self.tabs)
+        self.tabs.addTab(self.tab3, "გრაფიკები")
 # ------------------------------------------------ set tab1 layouts ------------------------------------------------
         self.VlayoutTab1 = QVBoxLayout()
         self.HlayoutTab1 = QHBoxLayout()
 # ------------------------------------------------ set tab2 layouts ------------------------------------------------
         self.VlayoutTab2 = QVBoxLayout()
+# ------------------------------------------------ set tab3 layouts ------------------------------------------------
+        self.tab3.VlayoutTab3 = QVBoxLayout()
+        self.HlayoutTab3 = QHBoxLayout()
 # ----------------------------------- create table widget and add on vertical layut --------------------------------
-        global table
-        table = TableView(temp_data, 500, len(temp_header))                             # fixed size table
-        self.VlayoutTab1.addWidget(table)                            # add table in vertival layout of tab1
-# -------------------------------------------- selectred cell activation -------------------------------------------
-        table.clicked.connect(self.Row)
-        table.clicked.connect(self.Column)    
-# ----------------------------------------------- Table cell changed -----------------------------------------------
-        table.cellChanged.connect(self.tabEvent)
-#------------------------------------------------------ Buttons ----------------------------------------------------
-# ------------------------------------------------- create A button ------------------------------------------------
-        self.pushButton1 = QPushButton("ბეჭვდა")
-        self.HlayoutTab1.addWidget(self.pushButton1)
-        self.pushButton1.clicked.connect(self.A)
-# ------------------------------------------------- create B button ------------------------------------------------
-        #self.pushButton2 = QPushButton("შაბლონის შენახვა")
-        #self.HlayoutTab1.addWidget(self.pushButton2)
-        #self.pushButton2.clicked.connect(self.B)
-#------------------------------------------------------ Terminal ---------------------------------------------------
-        global terminal
-        terminal = QPlainTextEdit(self)
-        #terminal.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        self.VlayoutTab2.addWidget(terminal)
+        self.table = TableView(temp_data, 500, len(temp_data['header']))
+        self.table.openData(temp_data)
+        self.VlayoutTab1.addWidget(self.table)                            # add table in vertival layout of tab1
+# ---------------------------------------------------- plot data ---------------------------------------------------
+        from Plots import PlotCanvas
+        self.plot1 = PlotCanvas(self, width=5, height=4)
+        self.plot2 = PlotCanvas(self, width=5, height=4)
+        self.plot3 = PlotCanvas(self, width=5, height=4)
+        self.plot4 = PlotCanvas(self, width=5, height=4)
+#------------------------------------------------------ Spliter ----------------------------------------------------
+        self.splitter1 = QSplitter(Qt.Horizontal)
+        self.splitter1.addWidget(self.plot1)
+        self.splitter1.addWidget(self.plot2)
+
+        self.splitter2 = QSplitter(Qt.Vertical)
+        self.splitter2.addWidget(self.splitter1)
+        self.splitter2.addWidget(self.plot3)
+        self.splitter2.addWidget(self.plot4)
+
+        self.HlayoutTab3.addWidget(self.splitter2)
+        self.tab3.VlayoutTab3.addLayout(self.HlayoutTab3)
 # ------------------------------------------------- set tab 1 layout  ----------------------------------------------
         self.VlayoutTab1.addLayout(self.HlayoutTab1)
         self.tab1.setLayout(self.VlayoutTab1)
 # ------------------------------------------------- set tab 2 layout  ----------------------------------------------
         self.tab2.setLayout(self.VlayoutTab2)
-# ----------------------------------------------------- call open --------------------------------------------------
-        self.open()
-# ------------------------------------------------- Clear terminal -------------------------------------------------
-        terminal.clear()
-# ------------------------------------------------- Show main window -----------------------------------------------
-        self.show()
-# +++++++++++++++++++++++++++++++++++++++++++++++++++ status bar +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def process(self, text):
-        self.statusBar().showMessage(text)
-# ++++++++++++++++++++++++++++++++++++++++++++++++++ Determine Row +++++++++++++++++++++++++++++++++++++++++++++++++
-    def Row(self):
-        global table
-        self.row = table.currentRow()
-# +++++++++++++++++++++++++++++++++++++++++++++++++ Determine Column +++++++++++++++++++++++++++++++++++++++++++++++
-    def Column(self):
-        global table
-        self.col = table.currentColumn()
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ A +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def A(self):
-        self.term(str(temp_header))
-        self.term(str(temp_data['config'])) 
-        self.term(str(temp_Merge))
-        self.term(str(temp_table))
-        self.term(str(len(temp_table)))
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ B +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def B(self):
-        self.term("შენახვა")
-        with open('data.pkl', 'wb') as f:
-            pickle.dump(data, f)
-        with open('data.txt', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ open +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def open(self):
-        global table
-        global temp_header
-        global temp_Merge
-        global temp_table
-        global temp_config
-        global OpenPath
-        global temp_data
-
-        try:
-            with open('data.json', 'r') as f:
-                temp_data = json.load(f)
-
-            temp_header = temp_data['header']
-            temp_Merge = temp_data['Merge']
-            temp_table = temp_data['table']
-            temp_config = temp_data['config']
-
-            for item in temp_table:
-                try:
-                    newitem = QTableWidgetItem(item[2])
-                    table.setItem(item[0], item[1], newitem)
-                except IndexError:
-                    pass
-                
-                try:
-                    if item[6] != '':
-                        if item[6] == 'C':
-                            table.item(item[0], item[1]).setTextAlignment(Qt.AlignCenter)
-                        if item[6] == 'R':
-                            table.item(item[0], item[1]).setTextAlignment(Qt.AlignRight)
-                        if item[6] == 'L':
-                            table.item(item[0], item[1]).setTextAlignment(Qt.AlignLeft)
-                except IndexError:
-                    pass
-                
-                list_font = QtGui.QFont()
-                try:
-                    if item[3] != "":
-                        list_font.fromString(item[3])
-                        table.item(item[0], item[1]).setFont(list_font)
-                except IndexError:
-                    pass
-                
-                try:
-                    CellBgColor = QtGui.QColor(item[4][0],item[4][1],item[4][2],item[4][3])
-                    table.item(item[0], item[1]).setBackground(CellBgColor)
-                except IndexError:
-                    pass
-
-                try:
-                    TxtColor = QtGui.QColor(item[5][0],item[5][1],item[5][2],item[5][3])
-                    table.item(item[0], item[1]).setForeground(TxtColor)
-                except IndexError:
-                    pass
-
-            for index in temp_Merge:
-                table.setSpan(index[0], index[1], index[2], index[3])
-                    
-            table.setHeaders()
-        except FileNotFoundError:
-            self.save()
-            self.open()
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Save +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def save(self):
-        global temp_data
-        
-        with open('data.json', 'w') as outfile:
-            temp_data['header'] = temp_header
-            temp_data['Merge'] = temp_Merge
-            temp_data['table'] = temp_table
-            temp_data['config'] = temp_config
-
-            json.dump(temp_data, outfile, indent=4)
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ copy +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def copy(self):
-        global table
-        self.clip = QApplication.clipboard()
-        self.selected = table.selectedRanges()
-
-        t_row = []
-        t_col = []
-        for i in range(len(self.selected)):
-            t_col.append(self.selected[i].leftColumn())
-            t_row.append(self.selected[i].topRow())
-
-        max_row = max(t_row) + 1
-        min_row = min(t_row)
-
-        max_col = max(t_col) + 1
-        min_col = min(t_col)
-     
-        s = ""
-        for r in range(min_row, max_row):
-            #self.term(str(r))
-            for c in range(min_col, max_col):
-                #self.term(str(c))
-                try:
-                    s += str(table.item(r,c).text()) + "\t"
-                except AttributeError:
-                    s += "\t"
-            s = s[:-1] + "\n"
-        self.clip.setText(s)
-        self.term(str(self.clip.text()))
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++ paste +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def paste(self):
-        global table
-        global temp_table
-        try:
-            first_row = self.row
-            first_col = self.col
-            #copied text is split by '\n' and '\t' to paste to the cells
-            for r, row in enumerate(self.clip.text().split('\n')):
-                for c, text in enumerate(row.split('\t')):
-                    table.setItem(first_row + r, first_col + c, QTableWidgetItem(text))
-                    for table_item in temp_table:
-                        if table_item[0] == first_row + r and table_item[1] == first_col + c:
-                            table_item[2] = str(table.item(first_row + r, first_col + c).text())
-                        else:
-                            temp_table.append([first_row + r, first_col + c, str(table.item(first_row + r, first_col + c).text()),'',[],[],''])
-                            break
-        except AttributeError:
-            pass
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ play +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def play(self):
-        import os
-        global table
-        try:
-            l = table.item(self.row, 4)
-            os.startfile(l.text())
-        except:
-            pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++ Insert Row ++++++++++++++++++++++++++++++++++++++++++++++++++
-    def insRow(self, indexRow = 0):
-        global table
-        global temp_Merge
-        self.row = table.currentRow()
-        table.insertRow(self.row)
-        try:
-            for j in range(len(temp_table)):                
-                if temp_table[j][0] >= self.row:
-                    temp_table[j][0] = temp_table[j][0] + 1
-        except IndexError:
-            pass
-        
-        for i in range(len(temp_Merge)):
-            if self.row <= temp_Merge[i][0]:
-                temp_Merge[i][0] = temp_Merge[i][0] + 1            
-# +++++++++++++++++++++++++++++++++++++++++++++++++++ TABLE EVENT ++++++++++++++++++++++++++++++++++++++++++++++++++
-    def tabEvent(self):
-        global temp_table
-        r = table.currentRow()
-        c = table.currentColumn()
-        try:
-            item = table.item(r, c)
-            self.value = item.text()
-            if self.value is not '':
-                if len(temp_table) == 0:
-                    temp_table.append([r,c,self.value,'',[],[],'C'])
-                else:
-                    add = False
-                    for table_item in temp_table:
-                        if table_item[0] == r and table_item[1] == c:
-                            table_item[2] = str(self.value)
-                            add = False
-                            break
-                        else:
-                            add = True
-                    if add == True:
-                        temp_table.append([r,c,self.value,'',[],[],'C'])
-                        table.item(r, c).setTextAlignment(Qt.AlignCenter)
-        except AttributeError:
-            pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++ Delete table Row ++++++++++++++++++++++++++++++++++++++++++++++++
-    def delRow(self):
-        global table
-        global temp_Merge
-        global temp_table
-        self.row = table.currentRow()
-        table.removeRow(self.row)
-        try:
-            for item in temp_table:
-                if item[0] == self.row:
-                    temp_table = list(filter(partial(ne, item), temp_table))
-        except IndexError:
-            pass
-
-        try:
-            for j in range(len(temp_table)):                
-                if temp_table[j][0] >= self.row:
-                    temp_table[j][0] = temp_table[j][0] - 1
-        except IndexError:
-            pass
-        
-        for i in range(len(temp_Merge)):
-            if self.row < temp_Merge[i][0]:
-                temp_Merge[i][0] = temp_Merge[i][0] - 1
-
-        for M_item in temp_Merge:
-            if M_item[0] == self.row:
-                temp_Merge = list(filter(partial(ne, M_item), temp_Merge))
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++ merge +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def merge(self):
-        global table
-        global temp_Merge
-        r = []
-        c = []
-        for item in table.selectedIndexes():
-            r.append(item.row())
-            c.append(item.column())
-        if len(r) > 0 or len(c) > 0:
-            table.setSpan(r[0], c[0], max(r)-min(r)+1, max(c)-min(c)+1)
-            t_Merge = [r[0], c[0], max(r)-min(r)+1, max(c)-min(c)+1]
-        
-        if t_Merge[2] != t_Merge[3]:
-            temp_Merge.append(t_Merge)
-            self.term(str(temp_Merge))
-        else:
-            for M_item in temp_Merge:
-                if t_Merge[0] == M_item[0] and t_Merge[1] == M_item[1]:
-                    temp_Merge = list(filter(partial(ne, M_item), temp_Merge))        
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Font +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def font(self):
-        global table
-        try:
-            font, ok = QFontDialog.getFont()
-            if ok:
-                for item in table.selectedIndexes():
-                    table.item(item.row(), item.column()).setFont(font)
-                    for table_item in temp_table:
-                        if table_item[0] == item.row() and table_item[1] == item.column():
-                            table_item[3] = font.toString()
-        except AttributeError:
-            pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++ color +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def color(self):
-        global table
-        color = QColorDialog.getColor()
-        if color.isValid():
-            for item in table.selectedIndexes():
-                try:
-                    table.item(item.row(),item.column()).setForeground(QBrush(color))
-                    for table_item in temp_table:
-                        if table_item[0] == item.row() and table_item[1] == item.column():
-                            table_item[5] = list(color.getRgb())
-                except AttributeError:
-                    pass
-# ++++++++++++++++++++++++++++++++++++++++++++++ Text bachground color +++++++++++++++++++++++++++++++++++++++++++++
-    def FontBackColor(self):
-        empty_cell = []
-        global table
-        global temp_table
-        BGColor = QColorDialog.getColor()
-        for item in table.selectedIndexes():
-            empty_cell = []
-            try:
-                table.item(item.row(),item.column()).setBackground(BGColor)
-                for table_item in temp_table:
-                        if table_item[0] == item.row() and table_item[1] == item.column():
-                            table_item[4] = list(BGColor.getRgb())
-            except AttributeError:
-                newitem = QTableWidgetItem(None)
-                table.setItem(item.row(), item.column(), newitem)
-                newitem.setBackground(BGColor)
-                empty_cell.append(item.row())
-                empty_cell.append(item.column())
-                empty_cell.append(None)
-                empty_cell.append('')
-                empty_cell.append(list(BGColor.getRgb()))
-                empty_cell.append([])
-                empty_cell.append('C')
-                temp_table.append(empty_cell)
-        self.term(str(BGColor.getRgb()))
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++ settings +++++++++++++++++++++++++++++++++++++++++++++++++++
-    #def settings(self):
-    #    print("settings")
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++ Clear +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def keyPressEvent(self, event):
-        global table
-        global temp_table
-        if event.key() == Qt.Key_Delete:
-            for item in table.selectedIndexes():
-                table.setItem(item.row(), item.column(), None)
-                for table_item in temp_table:
-                    if table_item[0] == item.row() and table_item[1] == item.column():
-                        temp_table = list(filter(partial(ne, table_item), temp_table))
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++ showDate +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def showDate(self, date):
-        self.CalLabel.setText(date.toString())
-# ++++++++++++++++++++++++++++++++++++++++++++++++++ Terminal Print ++++++++++++++++++++++++++++++++++++++++++++++++
-    def term(self, Text):
-        terminal.insertPlainText("-----------------------------\n")
-        terminal.insertPlainText("----> " + Text + "\n")
-        terminal.insertPlainText("-----------------------------\n")
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++ alignLeft +++++++++++++++++++++++++++++++++++++++++++++++++++
-    def alignLeft(self):
-        global table
-        try:
-            for item in table.selectedIndexes():
-                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignLeft)
-                for table_item in temp_table:
-                    if table_item[0] == item.row() and table_item[1] == item.column():
-                        table_item[6] = 'L'
-        except AttributeError:
-            pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++ alignRight ++++++++++++++++++++++++++++++++++++++++++++++++++
-    def alignRight(self):
-        global table
-        try:
-            for item in table.selectedIndexes():
-                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignRight)
-                for table_item in temp_table:
-                    if table_item[0] == item.row() and table_item[1] == item.column():
-                        table_item[6] = 'R'
-        except AttributeError:
-            pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++ alignCenter +++++++++++++++++++++++++++++++++++++++++++++++++
-    def alignCenter(self):
-        global table
-        try:
-            for item in table.selectedIndexes():
-                table.item(item.row(), item.column()).setTextAlignment(Qt.AlignCenter)
-                for table_item in temp_table:
-                    if table_item[0] == item.row() and table_item[1] == item.column():
-                        table_item[6] = 'C'
-        except AttributeError:
-            pass
+# ------------------------------------------------- set tab 3 layout  ----------------------------------------------
+        self.tab3.setLayout(self.tab3.VlayoutTab3)
+#------------------------------------------------------ Terminal ---------------------------------------------------
+        self.terminal = QPlainTextEdit(self)
+        self.VlayoutTab2.addWidget(self.terminal)
+# ++++++++++++++++++++++++++++++++++++++++++++++ set main window size ++++++++++++++++++++++++++++++++++++++++++++++
+    def setWindowSize(self,left,top,Edit_width,height):
+        self.setGeometry(left, top, Edit_width, height)
+# +++++++++++++++++++++++++++++++++++++++++++++++ StatusBar Message ++++++++++++++++++++++++++++++++++++++++++++++++
+    def statusBarMessage(self,message):
+        self.statusBar().showMessage(message)
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Toolbar Hide-Show +++++++++++++++++++++++++++++++++++++++++++++++
     def handleToggleTool(self):
         global tt
@@ -706,18 +228,76 @@ class App(QMainWindow):
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     def handleToggleStatus(self):
         global ts
-
         if ts == True:
             self.status.hide()
             ts = False
         else:
             self.status.show()
             ts = True
-# ------------------------------------------------------------------------------------------------------------------
-# ==================================================================================================================
-# ==================================================================================================================
+# ++++++++++++++++++++++++++++++++++++++++++++++++++ Terminal Print ++++++++++++++++++++++++++++++++++++++++++++++++
+    def term(self, Text):
+        self.terminal.insertPlainText("-----------------------------\n")
+        self.terminal.insertPlainText("----> " + Text + "\n")
+        self.terminal.insertPlainText("-----------------------------\n")
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ play +++++++++++++++++++++++++++++++++++++++++++++++++++++
+    def play(self):
+        import os
+        try:
+            l = self.table.item(self.table.currentRow(), 4)
+            os.startfile(l.text())
+            self.statusBarMessage('გაშვება')
+        except:
+            print(str(l.text()))
+            print("exept")
+            pass
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Save +++++++++++++++++++++++++++++++++++++++++++++++++++++
+    def save(self,Path):
+        with open(Path, 'w') as outfile:
+            json.dump(temp_data, outfile, indent=4)
+        self.statusBarMessage('შენახვა')
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++ importData ++++++++++++++++++++++++++++++++++++++++++++++++++
+    def importData(self,OpenPath):
+        self.OpenPath = OpenPath
+        global temp_data
+        try:
+            with open(OpenPath, 'r') as f:
+                temp_data = json.load(f)
+            return temp_data
+        except FileNotFoundError:
+            pass
+            self.save('data.json')
+            self.importData('data.json')
+# ++++++++++++++++++++++++++++++++++++++++++ Print data structure button +++++++++++++++++++++++++++++++++++++++++++
+    def printData(self):
+        self.term(" ჰედერი ---> " + str(temp_data['header']))
+        self.term(" კონფიგურაცია ---> " + str(temp_data['config']))
+        self.term(" შერწყმა ---> " + str(temp_data['Merge']))
+        self.term(" ცხრილის ---> " + str(temp_data['table']))
+        self.term(" ცხრილის ზომა ---> " + str(len(temp_data['table'])))
+        currentIndex=self.tabs.currentIndex()
+        currentWidget=self.tabs.currentWidget()
+        self.term(" ფანჯრის ინდექსი ---> " + str(currentIndex))
+        self.term(" მიმდინარე ვიდჯეტი ---> " + str(currentWidget))
+        self.statusBarMessage("მონაცემთა დაბეჭვდა")
+# +++++++++++++++++++++++++++++++++++++++++++++++ save Data template +++++++++++++++++++++++++++++++++++++++++++++++
+    def dataTemplate(self):
+        global temp_data
+        with open('data.json', 'w') as f:
+            json.dump(data, f, indent=4)
+        self.statusBarMessage("მონაცემთა შაბლონის შენახვა")
+        temp_data = self.importData('data.json')
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++ settings +++++++++++++++++++++++++++++++++++++++++++++++++++
+    def settings(self):
+        from SettingsDialog import Settings
+        diag = Settings(temp_data['config'])
+        diag.exec_()
+        temp_data['config'] = diag.applySettings()
+        self.term(str(temp_data['config']))
+        self.statusBarMessage("პარამეტრები")
+        self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"]))
+####################################################################################################################
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    ex = App('Bookmarks',50,30,"img/link.png")
+    ex.show()
     sys.exit(app.exec_())
-#----------------------------------------------------- Reserve -----------------------------------------------------
