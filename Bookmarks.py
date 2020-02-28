@@ -1,45 +1,53 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5 import *
+from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView, QPlainTextEdit, QLineEdit, QSplitter, QLabel, QHeaderView, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QIcon
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import Qt
 from Table import TableView
 import datetime
 import json
 import sys
 
-data = {'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
-        'Merge' : [[0, 0, 1, 6],[2, 0, 1, 6],[4, 0, 1, 6]],
-        'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
-        'table' : [[0,0,'LabVIEW','',[190, 192, 200, 255],[],'C'],
-                   [1,0,'Labview tutorial Enable integration','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [1,1,'42','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [1,2,'42','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [1,4,r'https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [1,5,'გაკვეთილი','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [2,0,'Qt C++','',[190, 192, 200, 255],[],'C'],
-                   [3,0,'Udemy - C Plus Plus programming in Qt FrameWork Part I','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [3,1,'8','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [3,2,'11','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [3,4,r'D:\Courses\Programing\C\Qt_C++\Udemy - C Plus Plus programming in Qt FrameWork Part I','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [3,5,'001 QMainWindow Structure','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [4,0,'ფიზიკა','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[190, 192, 200, 255],[],'C'],
-                   [5,0,'ზოგადი ფიზიკის კურსი I ტომი','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [5,1,'395','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [5,2,'490','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [5,4,r'D:\Library\ფიზიკა\ზოგადი ფიზიკის კურსი  I ტომი.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [6,0,'EPD ამაჩქარლების ფიზიკა','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [6,1,'38','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [6,2,'366','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
-                   [6,4,r'D:\Library\ამაჩქარებლები\EPD ამაჩქარლების ფიზიკა.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}
+data = {'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
+        'data_tab1' : {'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
+                       'Merge' : [[0, 0, 1, 6],[2, 0, 1, 6],[4, 0, 1, 6]],
+                       'table' : [[0,0,'LabVIEW','',[190, 192, 200, 255],[],'C'],
+                                  [1,0,'Labview tutorial Enable integration','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [1,1,'42','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [1,2,'42','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [1,4,r'https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [1,5,'გაკვეთილი','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [2,0,'Qt C++','',[190, 192, 200, 255],[],'C'],
+                                  [3,0,'Udemy - C Plus Plus programming in Qt FrameWork Part I','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [3,1,'8','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [3,2,'11','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [3,4,r'D:\Courses\Programing\C\Qt_C++\Udemy - C Plus Plus programming in Qt FrameWork Part I','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [3,5,'001 QMainWindow Structure','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [4,0,'ფიზიკა','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[190, 192, 200, 255],[],'C'],
+                                  [5,0,'ზოგადი ფიზიკის კურსი I ტომი','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [5,1,'395','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [5,2,'490','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [5,4,r'D:\Library\ფიზიკა\ზოგადი ფიზიკის კურსი  I ტომი.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [6,0,'EPD ამაჩქარლების ფიზიკა','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [6,1,'38','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [6,2,'366','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                  [6,4,r'D:\Library\ამაჩქარებლები\EPD ამაჩქარლების ფიზიკა.pdf','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]},
+        'data_tab2' : { 'header': ['ლინკი','შინაარსი','კომენტარი'],
+                        'Merge' : [[0, 0, 1, 6]],
+                        'table' : [[0,0,'LabVIEW','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[190, 192, 200, 255],[],'C'],
+                                   [1,0,r'https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                   [1,1,'Labview tutorial Enable integration','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}}
 tt = True
 ts = True
-temp_data = { 'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
-              'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
-              'Merge':[],
-              'table':[] }
+temp_data = { 'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900},
+              'data_tab1' : {'header': ['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
+                             'Merge' : [],
+                             'table' : []},
+              'data_tab2' : {'header': ['ლინკი','შინაარსი','კომენტარი'],
+                             'Merge' : [],
+                             'table' : []}}
 class App(QMainWindow):
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ +++++++++++++++++++++++++++++++++++++++++++++++++++
     def __init__(self,title,top,left,iconPath):
@@ -56,7 +64,7 @@ class App(QMainWindow):
         QMainWindow.__init__(self)
         self.setWindowTitle(self.title)                                # sets window title
         self.setWindowIcon(QtGui.QIcon(self.iconPath))                 # Set main window icon
-        self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"])) # set window size
+        self.setGeometry(self.left, self.top, int(temp_data['config']['length']), int(temp_data['config']['width'])) # set window size
 #----------------------------------------------- set date on status ber --------------------------------------------
         now = datetime.datetime.now()                                  # read date
         self.statusBar().showMessage(now.strftime("%d-%m-%Y"))         # set date to statusBar
@@ -82,11 +90,11 @@ class App(QMainWindow):
 # ------------------------------------------------------- copy -----------------------------------------------------
         copyAct = QAction(QIcon('img/copy.png'),'ასლი', self)              # create Copy button in toolBar
         copyAct.setShortcut("Ctrl+C")                                      # key manipulation of Copy button
-        copyAct.triggered.connect(lambda : self.table.copy())        # run function
+        copyAct.triggered.connect(lambda : self.table1.copy())              # run function
 # ------------------------------------------------------ paste -----------------------------------------------------
         pasteAct = QAction(QIcon('img/paste.png'),'ჩაკვრა', self)           # create paste button in toolBar
         pasteAct.setShortcut("Ctrl+V")                                     # key manipulation of paste button
-        pasteAct.triggered.connect(lambda : self.table.paste())            # run function
+        pasteAct.triggered.connect(lambda : self.table1.paste())            # run function
 # ------------------------------------------------------- play -----------------------------------------------------
         playAct = QAction(QIcon('img/play.png'),'გაშვება', self)            # create play button in toolBar
         playAct.setShortcut("Ctrl+P")                                      # key manipulation of play button
@@ -94,32 +102,32 @@ class App(QMainWindow):
 #--------------------------------------------- Row - Column manipulation -------------------------------------------
 # ------------------------------------------------ insert Row toolbar ----------------------------------------------
         insRowAct = QAction(QIcon('img/addRow.png'), 'სტრიქონის დამატება', self) # create addRow button in toolBar
-        insRowAct.triggered.connect(lambda : self.table.insRow())                # run function
+        insRowAct.triggered.connect(lambda : self.table1.insRow())                # run function
 # ------------------------------------------------ Delete Row toolbar ----------------------------------------------
         DelRowAct = QAction(QIcon('img/DelRow.png'), 'სტრიქონის წაშლა', self)    # create delRow button in toolBar
-        DelRowAct.triggered.connect(lambda : self.table.delRow())                 # run function
+        DelRowAct.triggered.connect(lambda : self.table1.delRow())                 # run function
 # ------------------------------------------------------ Menge -----------------------------------------------------
         mergeAct = QAction(QIcon('img/merge.png'), 'შერწყმა', self)               # create Merge button in toolBar
-        mergeAct.triggered.connect(lambda : self.table.merge())                   # run function
+        mergeAct.triggered.connect(lambda : self.table1.merge())                   # run function
 #-------------------------------------------------------- Font -----------------------------------------------------
 # --------------------------------------------------- Font toolbar -------------------------------------------------
         FontAct = QAction(QIcon('img/Font.png'), 'ფონტები', self)                # create Font button in toolBar
-        FontAct.triggered.connect(lambda : self.table.font())                     # run function
+        FontAct.triggered.connect(lambda : self.table1.font())                     # run function
 # --------------------------------------------------- color palete -------------------------------------------------
         colorAct = QAction(QIcon('img/color.png'), 'ტექსტის ფერები', self)       # create Font button in toolBar
-        colorAct.triggered.connect(lambda : self.table.color())                  # run function
+        colorAct.triggered.connect(lambda : self.table1.color())                  # run function
 # ------------------------------------------------- background color -----------------------------------------------
         backColorAct = QAction(QIcon("img/background-color.png"),"ფონის ფერი",self)  # create Font button in toolBar
-        backColorAct.triggered.connect(lambda : self.table.FontBackColor())           # run function
+        backColorAct.triggered.connect(lambda : self.table1.FontBackColor())           # run function
 # ---------------------------------------------------- alignLeft  --------------------------------------------------
         alignLeftAct = QAction(QIcon('img/alignLeft.png'), 'ტექსტი მარცხნივ', self)  # create Font button in toolBar
-        alignLeftAct.triggered.connect(lambda : self.table.alignLeft())              # run function
+        alignLeftAct.triggered.connect(lambda : self.table1.alignLeft())              # run function
 # ---------------------------------------------------- alignRight  -------------------------------------------------
         alignRightAct = QAction(QIcon('img/alignRight.png'), 'ტექსტი მარჯვნივ', self) # create Font button in toolBar
-        alignRightAct.triggered.connect(lambda : self.table.alignRight())             # run function
+        alignRightAct.triggered.connect(lambda : self.table1.alignRight())             # run function
 # --------------------------------------------------- alignCenter  -------------------------------------------------
         alignCenterAct = QAction(QIcon('img/alignCenter.png'), 'ტექსტი ცენტრში', self)
-        alignCenterAct.triggered.connect(lambda : self.table.alignCenter())
+        alignCenterAct.triggered.connect(lambda : self.table1.alignCenter())
 # ---------------------------------------------------- settings  ---------------------------------------------------
         settingsAct = QAction(QIcon('img/settings.png'), 'პარამეტრები', self)         # create Font button in toolBar
         settingsAct.triggered.connect(self.settings)                                  # run function
@@ -129,10 +137,12 @@ class App(QMainWindow):
 # ----------------------------------------------- save data template -----------------------------------------------
         saveTemplateAct = QAction(QIcon('img/template.png'), 'მონაცემთა შაბლონი', self)  # create Font button in toolBar
         saveTemplateAct.triggered.connect(self.dataTemplate)                              # run function
-        saveTemplateAct.triggered.connect(lambda : self.table.openData(temp_data))        # run function
+        saveTemplateAct.triggered.connect(lambda : self.table1.openData(temp_data['data_tab1']))        # run function
+        saveTemplateAct.triggered.connect(lambda : self.table2.openData(temp_data['data_tab2']))        # run function
 # ------------------------------------------------------ Test ------------------------------------------------------
-        testAct = QAction(QIcon('img/test.png'), 'ტესტი', self)  # create Test button in toolBar
-        testAct.triggered.connect(lambda : self.table.calculations(temp_data))                                      # run function
+        testAct = QAction(QIcon('img/test.png'), 'ტესტი', self)                       # create Test button in toolBar
+        #testAct.triggered.connect(lambda : self.table1.calculations(temp_data))        # run function
+        testAct.triggered.connect(self.test)                                           # run function
 # ------------------------------------------- add buttons on first toolbar -----------------------------------------
         self.toolbar = self.addToolBar('Tools')
         self.toolbar.addAction(exitAct)
@@ -184,13 +194,13 @@ class App(QMainWindow):
         self.HlayoutTab3 = QHBoxLayout()
 # ----------------------------------------------------- Search -----------------------------------------------------
         self.HlayoutSearch = QHBoxLayout()
-        self.search_line = QtWidgets.QLineEdit()
-        self.search_but = QtWidgets.QPushButton("ძებნა")
-        self.search_next = QtWidgets.QPushButton("შემდეგი")
+        self.search_line = QLineEdit()
+        self.search_but = QPushButton("ძებნა")
+        self.search_next = QPushButton("შემდეგი")
         self.searchInfoLabel = QLabel("    ")
         self.searchInfoLabel.setText("0")
-        self.search_but.clicked.connect(lambda : self.searchInfoLabel.setText(str(self.table.find_items(self.search_line.text()))))
-        self.search_next.clicked.connect(lambda : self.table.find_items(self.search_line.text()))
+        self.search_but.clicked.connect(lambda : self.searchInfoLabel.setText(str(self.table1.find_items(self.search_line.text()))))
+        self.search_next.clicked.connect(lambda : self.table1.find_items(self.search_line.text()))
 
         self.HlayoutSearch.addWidget(self.search_line)
         self.HlayoutSearch.addWidget(self.search_but)
@@ -198,10 +208,16 @@ class App(QMainWindow):
         self.HlayoutSearch.addWidget(self.searchInfoLabel)
 
         self.VlayoutTab1.addLayout(self.HlayoutSearch)
-# ----------------------------------- create table widget and add on vertical layut --------------------------------
-        self.table = TableView(temp_data, 500, len(temp_data['header']))
-        self.table.openData(temp_data)
-        self.VlayoutTab1.addWidget(self.table)                            # add table in vertival layout of tab1
+# ----------------------------------- create table1 widget and add on vertical layut --------------------------------
+        col_width_array_tab1 = {0 : 500, 1 : 120, 2 : 120, 4 : 500, 5 : 360}
+        self.table1 = TableView(temp_data['data_tab1'], col_width_array_tab1, 500, len(temp_data['data_tab1']['header']))
+        self.table1.openData(temp_data['data_tab1'])
+        self.VlayoutTab1.addWidget(self.table1)                            # add table in vertival layout of tab1
+# ----------------------------------- create table2 widget and add on vertical layut --------------------------------
+        col_width_array_tab2 = {0 : 580, 1 : 580, 2 : 580}
+        self.table2 = TableView(temp_data['data_tab2'], col_width_array_tab2, 500, len(temp_data['data_tab2']['header']))
+        self.table2.openData(temp_data['data_tab2'])
+        self.VlayoutTab2.addWidget(self.table2)                            # add table in vertival layout of tab1
 # ---------------------------------------------------- plot data ---------------------------------------------------
         from Plots import PlotCanvas
         self.plot1 = PlotCanvas(self, width=5, height=4)
@@ -263,7 +279,7 @@ class App(QMainWindow):
     def play(self):
         import os
         try:
-            l = self.table.item(self.table.currentRow(), 4)
+            l = self.table1.item(self.table1.currentRow(), 4)
             os.startfile(l.text())
             self.statusBarMessage('გაშვება')
         except:
@@ -289,11 +305,13 @@ class App(QMainWindow):
             self.importData('data.json')
 # ++++++++++++++++++++++++++++++++++++++++++ Print data structure button +++++++++++++++++++++++++++++++++++++++++++
     def printData(self):
-        self.term(" ჰედერი ---> " + str(temp_data['header']))
+        self.term(" ჰედერი ---> " + str(temp_data['data_tab1']['header']))
         self.term(" კონფიგურაცია ---> " + str(temp_data['config']))
-        self.term(" შერწყმა ---> " + str(temp_data['Merge']))
-        self.term(" ცხრილის ---> " + str(temp_data['table']))
-        self.term(" ცხრილის ზომა ---> " + str(len(temp_data['table'])))
+        self.term(" შერწყმა ---> " + str(temp_data['data_tab1']['Merge']))
+        self.term(" ცხრილის 1 ---> " + str(temp_data['data_tab1']['table']))
+        self.term(" ცხრილის 1 ზომა ---> " + str(len(temp_data['data_tab1']['table'])))
+        self.term(" ცხრილის 2 ---> " + str(temp_data['data_tab2']['table']))
+        self.term(" ცხრილის 2 ზომა ---> " + str(len(temp_data['data_tab2']['table'])))
         currentIndex=self.tabs.currentIndex()
         currentWidget=self.tabs.currentWidget()
         self.term(" ფანჯრის ინდექსი ---> " + str(currentIndex))

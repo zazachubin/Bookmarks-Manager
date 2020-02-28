@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5 import *
+from PyQt5.QtWidgets import QApplication, QHeaderView, QColorDialog, QFontDialog, QHeaderView, QTableWidget, QTableWidgetItem
+from PyQt5.QtGui import QColor, QBrush
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import Qt
 from functools import partial 
 from operator import ne
 import sys
@@ -9,19 +9,17 @@ import sys
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TableView ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TableView(QTableWidget):
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ ++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def __init__(self, temp_data, *args):
+    def __init__(self, temp_data, col_width_array, *args):
         QTableWidget.__init__(self, *args)
+        self.col_width_array = col_width_array
         self.temp_data = temp_data
         self.selected_items = []
         self.setHeaders()
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
         self.setSortingEnabled(False)
-        self.setColumnWidth(0,500)
-        self.setColumnWidth(1,120)
-        self.setColumnWidth(2,120)
-        self.setColumnWidth(4,500)
-        self.setColumnWidth(5,360)
+        for key in self.col_width_array:
+            self.setColumnWidth(key,self.col_width_array[key])
         self.setWordWrap(True)
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.cellChanged.connect(self.tabEvent)
@@ -358,15 +356,10 @@ class TableView(QTableWidget):
 ############################################################################################################
 if __name__ == '__main__':
     temp_data = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
-              'config': {'tableColNumber' : 6,'language' : 'georgian','length': 500, 'width' : 500},
-              'Merge':[],
-              'table':[] }
+                  'Merge':[],
+                  'table':[] }
     app = QApplication(sys.argv)
-    #diag.exec_()
-    #print (diag.applySettings())
-    #print(ex.Row())
-    #ex = App('Bookmarks',50,30,1850,900,"img/link.png")
-    ex = TableView(temp_data)
-    #ex.setCentralWidget(table)
+    col_width_array_tab1 = {0 : 500, 1 : 120, 2 : 120, 4 : 500, 5 : 360}
+    ex = TableView(temp_data, col_width_array_tab1, 500, len(temp_data['header']))
     ex.show()
     sys.exit(app.exec_())
