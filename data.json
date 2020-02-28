@@ -5500,8 +5500,8 @@
     },
     "data_tab2": {
         "header": [
-            "\u10da\u10d8\u10dc\u10d9\u10d8",
             "\u10e8\u10d8\u10dc\u10d0\u10d0\u10e0\u10e1\u10d8",
+            "\u10da\u10d8\u10dc\u10d9\u10d8",
             "\u10d9\u10dd\u10db\u10d4\u10dc\u10e2\u10d0\u10e0\u10d8"
         ],
         "Merge": [
@@ -5509,38 +5509,38 @@
                 0,
                 0,
                 1,
-                6
+                3
             ]
         ],
         "table": [
             [
+                2,
+                0,
+                "",
+                "",
+                [],
+                [],
+                ""
+            ],
+            [
                 0,
                 0,
                 "LabVIEW",
-                "Times New Roman,8,-1,5,50,0,0,0,0,0,Regular",
+                "MS Shell Dlg 2,12,-1,5,75,0,0,0,0,0,Bold",
                 [
-                    190,
-                    192,
-                    200,
+                    206,
+                    198,
+                    196,
                     255
                 ],
                 [],
                 "C"
             ],
             [
-                1,
                 0,
+                1,
                 "https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu",
-                "Times New Roman,8,-1,5,50,0,0,0,0,0,Regular",
-                [],
-                [],
-                "C"
-            ],
-            [
-                1,
-                1,
-                "Labview tutorial Enable integration",
-                "Times New Roman,8,-1,5,50,0,0,0,0,0,Regular",
+                "Times New Roman,11,-1,5,50,0,0,0,0,0,Regular",
                 [],
                 [],
                 "C"
