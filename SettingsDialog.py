@@ -115,22 +115,13 @@ class Settings(QDialog):
         except ValueError:
             pass
         self.close()
-        return self.temp_config
 # +++++++++++++++++++++++++++++++++++++++++++++++++ Cancel Settings ++++++++++++++++++++++++++++++++++++++++++++++++
     def CancelSettings(self):
         self.close()
-        return self.default_temp_config
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     temp_config = {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 'width' : 900}
     diag = Settings(temp_config)
     diag.exec_()
-    print (diag.applySettings())
-    #ex=Settings()
-    #ex.show()
     sys.exit(app.exec_())
-
-######
-# bug with setting closeing its same as apply settings

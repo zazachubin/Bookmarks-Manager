@@ -1,7 +1,7 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
-from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView, QPlainTextEdit, QLineEdit, QSplitter, QLabel, QHeaderView, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPlainTextEdit, QLineEdit, QSplitter, QLabel, QHeaderView, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
@@ -37,7 +37,7 @@ data = {'config': {'tableColNumber' : 6,'language' : 'georgian','length': 1850, 
         'data_tab2' : { 'header': ['შინაარსი','ლინკი','კომენტარი'],
                         'Merge' : [[0, 0, 1, 6]],
                         'table' : [[0,0,'LabVIEW','MS Shell Dlg 2,11,-1,5,50,0,0,0,0,0,Regular',[190, 192, 200, 255],[],'C'],
-                                   [1,0,r'https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu','Times New Roman,8,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
+                                   [1,0,r'https://www.youtube.com/playlist?list=PLdNp0fxltzmPvvK_yjX-XyYgfVW8WK4tu','MS Shell Dlg 2,11,-1,5,50,0,0,0,0,0,Regular',[],[],'C'],
                                    [1,1,'Labview tutorial Enable integration','MS Shell Dlg 2,11,-1,5,50,0,0,0,0,0,Regular',[],[],'C']]}}
 tt = True
 ts = True
@@ -377,8 +377,6 @@ class App(QMainWindow):
         from SettingsDialog import Settings
         diag = Settings(temp_data['config'])
         diag.exec_()
-        temp_data['config'] = diag.applySettings()
-        self.term(str(temp_data['config']))
         self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"]))
         self.statusBarMessage("პარამეტრები")
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Test +++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -395,4 +393,3 @@ if __name__ == '__main__':
     ex.show()
     sys.exit(app.exec_())
 ######################################################## Issues ####################################################
-# * Setting close bug

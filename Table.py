@@ -1,11 +1,43 @@
-from PyQt5.QtWidgets import QApplication, QHeaderView, QColorDialog, QFontDialog, QHeaderView, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QHeaderView, QDialog, QLineEdit, QPushButton, QHBoxLayout, QColorDialog, QFontDialog, QHeaderView, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QColor, QBrush
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from functools import partial 
 from operator import ne
 import sys
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ insert column name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class HeaderName(QDialog):
+    def __init__(self, header, column, parent = None):
+        QDialog.__init__(self, parent)
+        self.header = header
+        self.column = column
+        self.setWindowTitle("სვეტის დასახელება")                                # call method which sets window title
+        self.setWindowIcon(QtGui.QIcon("img/finance.png"))                      # Set main window icon
+        hbox = QHBoxLayout()
+        self.textbox = QLineEdit(self)
+        self.Ok = QPushButton('დადასტურება', self)
+        self.Can = QPushButton('გაუქმება', self)
+        self.textbox.setText(self.header[self.column])
 
+        #hbox.addWidget(self.LabelColumn)
+        hbox.addWidget(self.textbox)
+        hbox.addWidget(self.Ok)
+        hbox.addWidget(self.Can)
+        self.setLayout(hbox)
+
+        self.Ok.clicked.connect(self.applyHeader)
+        self.Can.clicked.connect(self.CancelHeader)
+        self.show()
+# ++++++++++++++++++++++++++++++++++++++++++++++++ Apply header_1 text +++++++++++++++++++++++++++++++++++++++++++++
+    def applyHeader(self):
+        mes = self.textbox.text()
+        self.header.insert(self.column + 1, mes)
+        self.header.remove(self.header[self.column])
+        self.close()
+        #return self.header
+# ++++++++++++++++++++++++++++++++++++++++++++++++ Cancel header text ++++++++++++++++++++++++++++++++++++++++++++++
+    def CancelHeader(self):
+        self.close()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TableView ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TableView(QTableWidget):
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ __init__ ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -23,6 +55,7 @@ class TableView(QTableWidget):
         self.setWordWrap(True)
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.cellChanged.connect(self.tabEvent)
+        self.horizontalHeader().sectionDoubleClicked.connect(self.changeHorizontalHeader)
         #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ setHeaders +++++++++++++++++++++++++++++++++++++++++++++++++++
     def setHeaders(self):
@@ -364,6 +397,12 @@ class TableView(QTableWidget):
                     pass
             self.selected_items = []
         return len(self.selected_items)
+# ++++++++++++++++++++++++++++++++++++++++++++++++ change header name ++++++++++++++++++++++++++++++++++++++++++++++
+    def changeHorizontalHeader(self):
+        col = self.currentColumn()
+        diag = HeaderName(self.table_data['header'], col)
+        diag.exec_()
+        self.setHeaders()
 ####################################################################################################################
 if __name__ == '__main__':
     data_tab1 = { 'header':['დასახელება','მიმდინარე','რაოდენობა','შესრულებული %','ლინკი','კომენტარი'],
