@@ -19,7 +19,6 @@ class HeaderName(QDialog):
         self.Can = QPushButton('გაუქმება', self)
         self.textbox.setText(self.header[self.column])
 
-        #hbox.addWidget(self.LabelColumn)
         hbox.addWidget(self.textbox)
         hbox.addWidget(self.Ok)
         hbox.addWidget(self.Can)
@@ -34,7 +33,6 @@ class HeaderName(QDialog):
         self.header.insert(self.column + 1, mes)
         self.header.remove(self.header[self.column])
         self.close()
-        #return self.header
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Cancel header text ++++++++++++++++++++++++++++++++++++++++++++++
     def CancelHeader(self):
         self.close()
@@ -50,41 +48,41 @@ class TableView(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
         self.setSortingEnabled(False)
+        #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         for key in self.col_width_array:
             self.setColumnWidth(key,self.col_width_array[key])
         self.setWordWrap(True)
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.cellChanged.connect(self.tabEvent)
         self.horizontalHeader().sectionDoubleClicked.connect(self.changeHorizontalHeader)
-        #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ setHeaders +++++++++++++++++++++++++++++++++++++++++++++++++++
     def setHeaders(self):
         self.setHorizontalHeaderLabels(self.table_data['header'])
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ copy +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def copy(self):
-        self.clip = QApplication.clipboard()
-        self.selected = self.selectedRanges()
-        t_row = []
-        t_col = []
-        for i in range(len(self.selected)):
-            t_col.append(self.selected[i].leftColumn())
-            t_row.append(self.selected[i].topRow())
+        try:
+            self.clip = QApplication.clipboard()
+            rows = []
+            cols = []
+            for item in self.selectedIndexes():
+                rows.append(item.row())
+                cols.append(item.column())
 
-        max_row = max(t_row) + 1
-        min_row = min(t_row)
-
-        max_col = max(t_col) + 1
-        min_col = min(t_col)
-     
-        s = ""
-        for r in range(min_row, max_row):
-            for c in range(min_col, max_col):
-                try:
-                    s += str(self.item(r,c).text()) + "\t"
-                except AttributeError:
-                    s += "\t"
-            s = s[:-1] + "\n"
-        self.clip.setText(s)
+            min_row = min(rows)
+            max_row = max(rows)
+            min_col = min(cols)
+            max_col = max(cols)
+            s = ""
+            for r in range(min_row, max_row + 1):
+                for c in range(min_col, max_col + 1):
+                    try:
+                        s += str(self.item(r,c).text()) + "\t"
+                    except AttributeError:
+                        s += "\t"
+                s = s[:-1] + "\n"
+            self.clip.setText(s)
+        except ValueError:
+            pass
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ paste +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def paste(self):
         try:
@@ -109,42 +107,74 @@ class TableView(QTableWidget):
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ Insert Row ++++++++++++++++++++++++++++++++++++++++++++++++++
     def insRow(self):
         selected_Row = self.currentRow()
-        try:
-            for item in self.table_data['table']:
-                if item[0] >= selected_Row:
+        if selected_Row != -1:
+            try:
+                for item in self.table_data['table']:
+                    if item[0] >= selected_Row:
+                        item[0] += 1
+                self.insertRow(selected_Row)
+            except:
+                pass
+            
+            for item in self.table_data['Merge']:
+                if selected_Row <= item[0]:
                     item[0] += 1
-            self.insertRow(selected_Row)
-        except:
-            pass
-        
-        for item in self.table_data['Merge']:
-            if selected_Row <= item[0]:
-                item[0] += 1
 # ++++++++++++++++++++++++++++++++++++++++++++++++ Delete table Row ++++++++++++++++++++++++++++++++++++++++++++++++
     def delRow(self):
         selected_Row = self.currentRow()
-        try:
-            for item in self.table_data['table']:
-                if item[0] == selected_Row:
-                    self.table_data['table'] = list(filter(partial(ne, item), self.table_data['table']))
-            self.removeRow(selected_Row)
-        except:
-            pass
+        if selected_Row != -1:
+            try:
+                for item in self.table_data['table']:
+                    if item[0] == selected_Row:
+                        self.table_data['table'] = list(filter(partial(ne, item), self.table_data['table']))
+                self.removeRow(selected_Row)
+            except:
+                pass
 
-        try:
-            for item in self.table_data['table']:
-                if item[0] >= selected_Row:
+            try:
+                for item in self.table_data['table']:
+                    if item[0] >= selected_Row:
+                        item[0] -= 1
+            except:
+                pass
+
+            for M_item in self.table_data['Merge']:
+                if M_item[0] == selected_Row:
+                    self.table_data['Merge'] = list(filter(partial(ne, M_item), self.table_data['Merge']))
+
+            for item in self.table_data['Merge']:
+                if selected_Row <= item[0]:
                     item[0] -= 1
-        except:
-            pass
-
-        for M_item in self.table_data['Merge']:
-            if M_item[0] == selected_Row:
-                self.table_data['Merge'] = list(filter(partial(ne, M_item), self.table_data['Merge']))
-
-        for item in self.table_data['Merge']:
-            if selected_Row <= item[0]:
-                item[0] -= 1
+# +++++++++++++++++++++++++++++++++++++++++++++++++++ Insert Column ++++++++++++++++++++++++++++++++++++++++++++++++
+    def insColumn(self):
+        selected_Col = self.currentColumn()
+        if selected_Col != -1:
+            try:
+                self.insertColumn(selected_Col)
+                self.table_data['header'].insert(selected_Col, '')
+                for item in self.table_data['table']:
+                    if item[1] >= selected_Col:
+                        item[1] += 1
+            except:
+                pass
+# ++++++++++++++++++++++++++++++++++++++++++++++ Delete table Column +++++++++++++++++++++++++++++++++++++++++++++++
+    def delColumn(self):
+        selected_Col = self.currentColumn()
+        if selected_Col != -1:
+            try:
+                for item in self.table_data['table']:
+                    if item[1] == selected_Col:
+                        self.table_data['table'] = list(filter(partial(ne, item), self.table_data['table']))
+                self.removeColumn(selected_Col)
+            except:
+                pass
+            try:
+                for item in self.table_data['table']:
+                    if item[1] >= selected_Col:
+                        item[1] -= 1
+            except:
+                pass
+            self.table_data['header'].remove(self.table_data['header'][selected_Col])
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++ merge +++++++++++++++++++++++++++++++++++++++++++++++++++++
     def merge(self):
         r = []
@@ -315,6 +345,16 @@ class TableView(QTableWidget):
             pass
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++ openData +++++++++++++++++++++++++++++++++++++++++++++++++++
     def openData(self,table_data):
+        self.clear()
+        self.clearSpans()
+        row_indexes = []
+        tab_row_number = 50
+        if len(table_data['table']) != 0:
+            for item in table_data['table']:
+                row_indexes.append(item[0])
+            tab_row_number = max(row_indexes) + 21
+        self.setRowCount(tab_row_number)
+
         self.table_data = table_data
         for item in self.table_data['table']:
             try:

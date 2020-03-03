@@ -241,25 +241,13 @@ class App(QMainWindow):
 
         self.VlayoutTab2.addLayout(self.HlayoutSearch_tab2)
 # ----------------------------------- create table1 widget and add on vertical layut -------------------------------
-        row_indexes = []
-        tab1_row_number = 50
-        if len(temp_data['data_tab1']['table']) != 0:
-            for item in temp_data['data_tab1']['table']:
-                row_indexes.append(item[0])
-            tab1_row_number = max(row_indexes) + 5
         col_width_array_tab1 = {0 : 500, 1 : 120, 2 : 120, 4 : 500, 5 : 360}
-        self.table1 = TableView(temp_data['data_tab1'], col_width_array_tab1, tab1_row_number, len(temp_data['data_tab1']['header']))
+        self.table1 = TableView(temp_data['data_tab1'], col_width_array_tab1, 50, len(temp_data['data_tab1']['header']))
         self.table1.openData(temp_data['data_tab1'])
         self.VlayoutTab1.addWidget(self.table1)                            # add table in vertival layout of tab1
 # ----------------------------------- create table2 widget and add on vertical layut -------------------------------
-        row_indexes = []
-        tab2_row_number = 50
-        if len(temp_data['data_tab2']['table']) != 0:
-            for item in temp_data['data_tab2']['table']:
-                row_indexes.append(item[0])
-            tab2_row_number = max(row_indexes) + 5
         col_width_array_tab2 = {0 : 580, 1 : 580, 2 : 580}
-        self.table2 = TableView(temp_data['data_tab2'], col_width_array_tab2, tab2_row_number, len(temp_data['data_tab2']['header']))
+        self.table2 = TableView(temp_data['data_tab2'], col_width_array_tab2, 50, len(temp_data['data_tab2']['header']))
         self.table2.openData(temp_data['data_tab2'])
         self.VlayoutTab2.addWidget(self.table2)                            # add table in vertival layout of tab1
 # ---------------------------------------------------- plot data ---------------------------------------------------
