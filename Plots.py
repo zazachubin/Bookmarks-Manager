@@ -7,7 +7,8 @@ class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         FigureCanvas.__init__(self, fig)
-        #self.setParent(parent)
+        self.setStyleSheet("QWidget {background-color: rgba(0,41,59,255)}")
+        self.setParent(parent)
         FigureCanvas.setSizePolicy( self,QSizePolicy.Expanding,QSizePolicy.Expanding )
         FigureCanvas.updateGeometry(self)
         self.plot()
