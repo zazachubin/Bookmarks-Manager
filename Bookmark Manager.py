@@ -1,12 +1,14 @@
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------- Libraries ---------------------------------------------------
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPlainTextEdit, QLineEdit, QSplitter, QLabel, QHeaderView, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPlainTextEdit, QLineEdit, QTableWidgetItem, QListWidget, QProgressBar, QSplitter, QLabel, QHeaderView, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QHBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PushButton import PushBut
+from LineEdit import LineEdit
 from Table import TableView
+from pprint import pformat, pprint
 import datetime
 import json
 import sys
@@ -66,8 +68,8 @@ class App(QMainWindow):
 		QMainWindow.__init__(self)
 		self.setWindowTitle(self.title)                                # sets window title
 		self.setWindowIcon(QtGui.QIcon(self.iconPath))                 # Set main window icon
-		#self.setStyleSheet("""	QWidget {	background-color: rgba(0,41,59,255);}""")
-		self.setStyleSheet("background-color: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop: 0 #00CD00 , stop: 0.2 #0AC92B stop: 1 #00FF33 );")
+		self.setStyleSheet("""	QWidget {	background-color: rgba(0,41,59,255);}""")
+		#self.setStyleSheet("background-color: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop: 0 #00CD00 , stop: 0.2 #0AC92B stop: 1 #00FF33 );")
 		self.setGeometry(self.left, self.top, int(temp_data['config']['length']), int(temp_data['config']['width'])) # set window size
 #----------------------------------------------- set date on status ber --------------------------------------------
 		now = datetime.datetime.now()                                  # read date
@@ -100,20 +102,22 @@ class App(QMainWindow):
 		saveAct = QAction(QIcon('img/save.png'),'შენახვა', self)            # create Save button in toolBar
 		saveAct.setShortcut("Ctrl+S")                                      # key manipulation of save button
 		saveAct.triggered.connect(lambda : self.save('data.json'))         # run function
+		saveAct.triggered.connect(lambda : self.statusBarMessage("შენახვა"))         # run function
 # ------------------------------------------------------- copy -----------------------------------------------------
 		copyAct = QAction(QIcon('img/copy.png'),'ასლი', self)              # create Copy button in toolBar
 		copyAct.setShortcut("Ctrl+C")                                      # key manipulation of Copy button
 		copyAct.triggered.connect(lambda : self.table1.copy() if self.tabs.currentIndex() == 0 else self.table2.copy())     # run function
-		self.statusBarMessage("ასლი")
+		copyAct.triggered.connect(lambda : self.statusBarMessage("ასლი"))
 # ------------------------------------------------------ paste -----------------------------------------------------
 		pasteAct = QAction(QIcon('img/paste.png'),'ასლის ჩაკვრა', self)           # create paste button in toolBar
 		pasteAct.setShortcut("Ctrl+V")                                     # key manipulation of paste button
 		pasteAct.triggered.connect(lambda : self.table1.paste() if self.tabs.currentIndex() == 0 else self.table2.paste())
-		self.statusBarMessage("ასლის ჩაკვრა")
+		pasteAct.triggered.connect(lambda : self.statusBarMessage("ასლის ჩაკვრა"))
 # ------------------------------------------------------- play -----------------------------------------------------
 		playAct = QAction(QIcon('img/play.png'),'გაშვება', self)            # create play button in toolBar
 		playAct.setShortcut("Ctrl+P")                                      # key manipulation of play button
 		playAct.triggered.connect(self.play)                               # run function
+		playAct.triggered.connect(lambda : self.statusBarMessage('ლინკის გაშვება')) # run function
 #--------------------------------------------- Row - Column manipulation -------------------------------------------
 # ------------------------------------------------ insert Row toolbar ----------------------------------------------
 		insRowAct = QAction(QIcon('img/addRow.png'), 'სტრიქონის დამატება', self) # create addRow button in toolBar
@@ -155,6 +159,7 @@ class App(QMainWindow):
 # ---------------------------------------------------- settings  ---------------------------------------------------
 		settingsAct = QAction(QIcon('img/settings.png'), 'პარამეტრები', self)         # create Font button in toolBar
 		settingsAct.triggered.connect(self.settings)                                  # run function
+		self.statusBarMessage("პარამეტრები")
 # ---------------------------------------------- Print data structure ----------------------------------------------
 		printAct = QAction(QIcon('img/print.png'), 'მონაცემთა დაბეჭვდა', self)        # create Font button in toolBar
 		printAct.triggered.connect(self.printData)                                    # run function
@@ -229,6 +234,7 @@ class App(QMainWindow):
 		self.setCentralWidget(self.tabs)
 # ------------------------------------------------ set tab1 layouts ------------------------------------------------
 		self.VlayoutTab1 = QVBoxLayout()
+		self.HlayoutTab1 = QHBoxLayout()
 # ------------------------------------------------ set tab2 layouts ------------------------------------------------
 		self.VlayoutTab2 = QVBoxLayout()
 # ------------------------------------------------ set tab3 layouts ------------------------------------------------
@@ -237,16 +243,8 @@ class App(QMainWindow):
 		self.VlayoutTab4 = QVBoxLayout()
 # --------------------------------------------------- Search_tab1 --------------------------------------------------
 		self.HlayoutSearch_tab1 = QHBoxLayout()
-		self.search_line_tab1 = QLineEdit()
+		self.search_line_tab1 = LineEdit()
 		self.search_line_tab1.setPlaceholderText("Search to...")
-		self.search_line_tab1.setStyleSheet("""	margin: 1px; 
-												padding: 7px;
-												background-color: rgba(0,255,255,100); 
-												color: rgba(255,255,255,255); 
-												border-style: solid; 
-												border-radius: 3px; 
-												border-width: 0.5px; 
-												border-color: rgba(0,140,255,255);""")
 		self.search_but_tab1 = PushBut("ძებნა")
 		self.search_but_tab1.setIcon(QIcon('img/find.png'))
 		self.search_next_tab1 = PushBut("შემდეგი")
@@ -272,16 +270,8 @@ class App(QMainWindow):
 		self.VlayoutTab1.addLayout(self.HlayoutSearch_tab1)
 # --------------------------------------------------- Search_tab2 --------------------------------------------------
 		self.HlayoutSearch_tab2 = QHBoxLayout()
-		self.search_line_tab2 = QLineEdit()
+		self.search_line_tab2 = LineEdit()
 		self.search_line_tab2.setPlaceholderText("Search to...")
-		self.search_line_tab2.setStyleSheet("""	margin: 1px; 
-												padding: 7px;
-												background-color: rgba(0,255,255,100); 
-												color: rgba(255,255,255,255); 
-												border-style: solid; 
-												border-radius: 3px; 
-												border-width: 0.5px; 
-												border-color: rgba(0,140,255,255);""")
 		self.search_but_tab2 = PushBut("ძებნა")
 		self.search_but_tab2.setIcon(QIcon('img/find.png'))
 		self.search_next_tab2 = PushBut("შემდეგი")
@@ -305,11 +295,21 @@ class App(QMainWindow):
 		self.HlayoutSearch_tab2.addWidget(self.searchInfoLabel_tab2)
 
 		self.VlayoutTab2.addLayout(self.HlayoutSearch_tab2)
+# --------------------------------------------------- Content List -------------------------------------------------
+		self.contentList = QListWidget()
+		self.contentList.setWindowTitle('კონტენტი')
+		self.contentList.itemClicked.connect(self.test)
+		self.contentList.setMaximumWidth(200)
+		self.contentList.itemClicked.connect(self.t)
+		self.HlayoutTab1.addWidget(self.contentList)
 # ----------------------------------- create table1 widget and add on vertical layut -------------------------------
-		col_width_array_tab1 = {0 : 500, 1 : 120, 2 : 130, 3 : 170, 4 : 500, 5 : 350}
+		col_width_array_tab1 = {0 : 500, 1 : 120, 2 : 130, 3 : 170, 4 : 400, 5 : 250}
 		self.table1 = TableView(temp_data['data_tab1'], col_width_array_tab1, 50, len(temp_data['data_tab1']['header']))
 		self.table1.openData(temp_data['data_tab1'])
-		self.VlayoutTab1.addWidget(self.table1)                            # add table in vertival layout of tab1
+		self.HlayoutTab1.addWidget(self.table1)
+		self.BGColorCalculation()
+		self.table1.cellChanged.connect(self.calculationEvent)
+		self.VlayoutTab1.addLayout(self.HlayoutTab1)
 # ----------------------------------- create table2 widget and add on vertical layut -------------------------------
 		col_width_array_tab2 = {0 : 590, 1 : 590, 2 : 590}
 		self.table2 = TableView(temp_data['data_tab2'], col_width_array_tab2, 50, len(temp_data['data_tab2']['header']))
@@ -361,6 +361,7 @@ class App(QMainWindow):
 		self.tab3.setLayout(self.VlayoutTab3)
 # ------------------------------------------------- set tab 4 layout  ----------------------------------------------
 		self.tab4.setLayout(self.VlayoutTab4)
+		self.statusBarMessage("")
 # +++++++++++++++++++++++++++++++++++++++++++++++ StatusBar Message ++++++++++++++++++++++++++++++++++++++++++++++++
 	def statusBarMessage(self,message):
 		self.statusBar().showMessage(message)
@@ -420,14 +421,14 @@ class App(QMainWindow):
 		self.statusBarMessage('მონაცემთა შემოტანა')
 # ++++++++++++++++++++++++++++++++++++++++++ Print data structure button +++++++++++++++++++++++++++++++++++++++++++
 	def printData(self):
-		self.term(" კონფიგურაცია ---> " + str(temp_data['config']))
-		self.term(" ჰედერი 1 ---> " + str(temp_data['data_tab1']['header']))
-		self.term(" შერწყმა 1 ---> " + str(temp_data['data_tab1']['Merge']))
-		self.term(" ცხრილის 1 ---> " + str(temp_data['data_tab1']['table']))
+		self.term(" კონფიგურაცია ---> " + str(pformat(temp_data['config'], indent=4)))
+		self.term(" ჰედერი 1 ---> " + str(pformat(temp_data['data_tab1']['header'], indent=4)))
+		self.term(" შერწყმა 1 ---> " + str(pformat(temp_data['data_tab1']['Merge'], indent=4)))
+		self.term(" ცხრილის 1 ---> " + str(pformat(temp_data['data_tab1']['table'], indent=4)))
 		self.term(" ცხრილის 1 ზომა ---> " + str(len(temp_data['data_tab1']['table'])))
-		self.term(" ჰედერი 2 ---> " + str(temp_data['data_tab2']['header']))
-		self.term(" შერწყმა 2 ---> " + str(temp_data['data_tab2']['Merge']))
-		self.term(" ცხრილის 2 ---> " + str(temp_data['data_tab2']['table']))
+		self.term(" ჰედერი 2 ---> " + str(pformat(temp_data['data_tab2']['header'], indent=4)))
+		self.term(" შერწყმა 2 ---> " + str(pformat(temp_data['data_tab2']['Merge'], indent=4)))
+		self.term(" ცხრილის 2 ---> " + str(pformat(temp_data['data_tab2']['table'], indent=4)))
 		self.term(" ცხრილის 2 ზომა ---> " + str(len(temp_data['data_tab2']['table'])))
 		currentIndex=self.tabs.currentIndex()
 		currentWidget=self.tabs.currentWidget()
@@ -449,14 +450,131 @@ class App(QMainWindow):
 		self.diag.exec_()
 		self.setGeometry(self.left, self.top, int(temp_data['config']["length"]), int(temp_data['config']["width"]))
 		self.statusBarMessage("პარამეტრები")
+# ++++++++++++++++++++++++++++++++++++++++++++++ Time stamp to seconds +++++++++++++++++++++++++++++++++++++++++++++
+	def timeStampToSec(self, timeStamp):
+		from datetime import datetime
+		try:
+			pt = datetime.strptime(timeStamp,'%H:%M:%S')
+		except ValueError:
+			pt = datetime.strptime(timeStamp,'%M:%S')
+		total_seconds = pt.second + pt.minute*60 + pt.hour*3600
+		return int(total_seconds)
+# ++++++++++++++++++++++++++++++++ Update Background color and progress calculation ++++++++++++++++++++++++++++++++
+	def BGColorCalculation(self):
+		for row in range(self.table1.rowCount()):
+			try:
+				if self.table1.item(row, 2).text() != "" and type(int(self.table1.item(row, 2).text()) == type(int(0))):
+					newitem = QProgressBar()
+					newitem.setAlignment(Qt.AlignCenter)
+					newitem.setValue(round(float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text())*100, 1))
+					self.table1.setCellWidget(row, 3, newitem)
+
+					if float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) == 1:
+						for column in range(self.table1.columnCount()):
+							try:
+								self.table1.item(row, column).setBackground(QtGui.QColor(0, 170, 0, 255))
+							except AttributeError:
+								newitem = QTableWidgetItem(None)
+								self.table1.setItem(row, column, newitem)
+								newitem.setBackground(QtGui.QColor(0, 170, 0, 255))
+
+					if float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) > 0.8 and float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) <= 0.9:
+						for column in range(self.columnCount()):
+							try:
+								self.item(row, column).setBackground(QtGui.QColor(0, 170, 127, 255))
+							except AttributeError:
+								newitem = QTableWidgetItem(None)
+								self.table1.setItem(row, column, newitem)
+								newitem.setBackground(QtGui.QColor(0, 170, 127, 255))
+					
+					if float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) >= 0.3 and float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) <= 0.8:
+						for column in range(self.table1.columnCount()):
+							try:
+								self.table1.item(row, column).setBackground(QtGui.QColor(255, 255, 127, 255))
+							except AttributeError:
+								newitem = QTableWidgetItem(None)
+								self.table1.setItem(row, column, newitem)
+								newitem.setBackground(QtGui.QColor(255, 255, 127, 255))
+
+					if float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) < 0.3 and float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) != 0:
+						for column in range(self.table1.columnCount()):
+							try:
+								self.table1.item(row, column).setBackground(QtGui.QColor(255, 170, 0, 255))
+							except AttributeError:
+								newitem = QTableWidgetItem(None)
+								self.table1.setItem(row, column, newitem)
+								newitem.setBackground(QtGui.QColor(255, 170, 0, 255))
+
+					if float(self.table1.item(row, 1).text())/float(self.table1.item(row, 2).text()) == 0:
+						for column in range(self.columnCount()):
+							try:
+								self.table1.item(row, column).setBackground(QtGui.QColor(170, 170, 127, 255))
+							except AttributeError:
+								newitem = QTableWidgetItem(None)
+								self.table1.setItem(row, column, newitem)
+								newitem.setBackground(QtGui.QColor(170, 170, 127, 255))
+
+			except AttributeError:
+				pass
+			except ZeroDivisionError:
+				newitem = QTableWidgetItem('Inf')
+				self.table1.setItem(row, 3, newitem)
+				pass
+			except ValueError:
+				newitem = QProgressBar()
+				newitem.setAlignment(Qt.AlignCenter)
+				try:
+					newitem.setValue(round(self.timeStampToSec(self.table1.item(row, 1).text())/self.timeStampToSec(self.table1.item(row, 2).text())*100, 1))
+					self.table1.setCellWidget(row, 3, newitem)
+				except ValueError:
+					self.table1.removeCellWidget(row, 3)
+					pass
+				pass
+# +++++++++++++++++++++++++++++++++++++++++++++++++++ TABLE EVENT ++++++++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++++++++++++++++++++++++ Calculation Event +++++++++++++++++++++++++++++++++++++++++++++++
+	def calculationEvent(self):
+		try:
+			item = self.table1.item(self.table1.currentRow(), self.table1.currentColumn())
+			self.table1.value = item.text()
+			if self.table1.value is not '':
+				self.BGColorCalculation()
+		except AttributeError:
+			pass
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++ Test +++++++++++++++++++++++++++++++++++++++++++++++++++++
 	def test(self):
-		self.table1.calculationEvent()
+		#from pprint import pprint
+		self.contentNamesList = []
+		self.contentList.clear()
+		for row in range(self.table1.rowCount()):
+			try:
+				if isinstance(None, type(self.table1.item(row, 4))):
+					self.contentNamesList.append(self.table1.item(row, 0).text())
+				else:
+					if self.table1.item(row, 4).text() == "" and self.table1.item(row, 2).text() == "":
+						self.contentNamesList.append(self.table1.item(row, 0).text())
+			except AttributeError:
+				pass
+		self.term(str(pformat(self.contentNamesList, indent=4)))
+		self.contentList.addItems(self.contentNamesList)
+
 		self.statusBarMessage('ტესტი')
+
+	def t(self):
+		self.term(str(self.contentList.text()))
 ####################################################################################################################
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
 	app.setStyle('Fusion')
-	ex = App('Bookmarks',50,30,"img/link.png")
+	ex = App('Bookmark Manager',50,30,"img/link.png")
 	ex.show()
 	sys.exit(app.exec_())
+
+
+# search cell select bug
+# add home and end buttons
+# add right cklik cell sub menu
+# add undo and redo functions
+# add cut function
+# search bug fix +
+# add content list
+# 

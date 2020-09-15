@@ -2,8 +2,10 @@ from PyQt5.QtWidgets import QApplication, QHeaderView, QDialog, QLineEdit, QPush
 from PyQt5.QtGui import QColor, QBrush
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt, QThread
+from PushButton import PushBut
 from functools import partial 
 from operator import ne
+from LineEdit import LineEdit
 import sys
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ insert column name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class HeaderName(QDialog):
@@ -13,10 +15,13 @@ class HeaderName(QDialog):
 		self.column = column
 		self.setWindowTitle("სვეტის დასახელება")                                # call method which sets window title
 		self.setWindowIcon(QtGui.QIcon("img/finance.png"))                      # Set main window icon
+		self.setStyleSheet("""	QWidget {	background-color: rgba(0,41,59,255);
+											color:black;
+											border: 1px solid #fffff8;}""")
 		hbox = QHBoxLayout()
-		self.textbox = QLineEdit(self)
-		self.Ok = QPushButton('დადასტურება', self)
-		self.Can = QPushButton('გაუქმება', self)
+		self.textbox = LineEdit(self)
+		self.Ok = PushBut('დადასტურება')
+		self.Can = PushBut('გაუქმება')
 		self.textbox.setText(self.header[self.column])
 
 		hbox.addWidget(self.textbox)
@@ -27,7 +32,7 @@ class HeaderName(QDialog):
 		self.Ok.clicked.connect(self.applyHeader)
 		self.Can.clicked.connect(self.CancelHeader)
 		self.show()
-# ++++++++++++++++++++++++++++++++++++++++++++++++ Apply header_1 text +++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++++++++++++++++++++++++ Apply header text +++++++++++++++++++++++++++++++++++++++++++++++
 	def applyHeader(self):
 		mes = self.textbox.text()
 		self.header.insert(self.column + 1, mes)
@@ -54,7 +59,6 @@ class TableView(QTableWidget, QThread):
 		self.setWordWrap(True)
 		self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 		self.cellChanged.connect(self.tabEvent)
-		#self.cellChanged.connect(self.calculationEvent)
 		self.horizontalHeader().sectionDoubleClicked.connect(self.changeHorizontalHeader)
 		self.setStyleSheet("""	QWidget {	background-color: rgba(255,255,240,240);
 											color:black;
@@ -255,87 +259,6 @@ class TableView(QTableWidget, QThread):
 				newitem.setBackground(BGColor)
 				if list(BGColor.getRgb()) != list([255,255,255,255]):
 					self.table_data['table'].append([item.row(),item.column(),None,'',list(BGColor.getRgb()),[],'C'])
-# ++++++++++++++++++++++++++++++++++++++++++++++ Time stamp to seconds +++++++++++++++++++++++++++++++++++++++++++++
-	def timeStampToSec(self, timeStamp):
-		from datetime import datetime
-		try:
-			pt = datetime.strptime(timeStamp,'%H:%M:%S')
-		except ValueError:
-			pt = datetime.strptime(timeStamp,'%M:%S')
-		total_seconds = pt.second + pt.minute*60 + pt.hour*3600
-		return int(total_seconds)
-# ++++++++++++++++++++++++++++++++ Update Background color and progress calculation +++++++++++++++++++++++++++++++++++
-	def BGColorCalculation(self):
-		for row in range(self.rowCount()):
-			try:
-				if self.item(row, 2).text() != "":
-					newitem = QTableWidgetItem(str(round(float(self.item(row, 1).text())/float(self.item(row, 2).text())*100, 1)) + "%")
-					self.setItem(row, 3, newitem)
-
-					if float(self.item(row, 1).text())/float(self.item(row, 2).text()) == 1:
-						for column in range(self.columnCount()):
-							try:
-								self.item(row, column).setBackground(QtGui.QColor(0, 170, 0, 255))
-							except AttributeError:
-								newitem = QTableWidgetItem(None)
-								self.setItem(row, column, newitem)
-								newitem.setBackground(QtGui.QColor(0, 170, 0, 255))
-
-					if float(self.item(row, 1).text())/float(self.item(row, 2).text()) > 0.8 and float(self.item(row, 1).text())/float(self.item(row, 2).text()) <= 0.9:
-						for column in range(self.columnCount()):
-							try:
-								self.item(row, column).setBackground(QtGui.QColor(0, 170, 127, 255))
-							except AttributeError:
-								newitem = QTableWidgetItem(None)
-								self.setItem(row, column, newitem)
-								newitem.setBackground(QtGui.QColor(0, 170, 127, 255))
-					
-					if float(self.item(row, 1).text())/float(self.item(row, 2).text()) >= 0.3 and float(self.item(row, 1).text())/float(self.item(row, 2).text()) <= 0.8:
-						for column in range(self.columnCount()):
-							try:
-								self.item(row, column).setBackground(QtGui.QColor(255, 255, 127, 255))
-							except AttributeError:
-								newitem = QTableWidgetItem(None)
-								self.setItem(row, column, newitem)
-								newitem.setBackground(QtGui.QColor(255, 255, 127, 255))
-
-					if float(self.item(row, 1).text())/float(self.item(row, 2).text()) < 0.3 and float(self.item(row, 1).text())/float(self.item(row, 2).text()) != 0:
-						for column in range(self.columnCount()):
-							try:
-								self.item(row, column).setBackground(QtGui.QColor(255, 170, 0, 255))
-							except AttributeError:
-								newitem = QTableWidgetItem(None)
-								self.setItem(row, column, newitem)
-								newitem.setBackground(QtGui.QColor(255, 170, 0, 255))
-
-					if float(self.item(row, 1).text())/float(self.item(row, 2).text()) == 0:
-						for column in range(self.columnCount()):
-							try:
-								self.item(row, column).setBackground(QtGui.QColor(170, 170, 127, 255))
-							except AttributeError:
-								newitem = QTableWidgetItem(None)
-								self.setItem(row, column, newitem)
-								newitem.setBackground(QtGui.QColor(170, 170, 127, 255))
-
-			except AttributeError:
-				pass
-			except ZeroDivisionError:
-				newitem = QTableWidgetItem('Inf')
-				self.setItem(row, 3, newitem)
-				pass
-			except ValueError:
-				newitem = QTableWidgetItem(str(round(self.timeStampToSec(self.item(row, 1).text())/self.timeStampToSec(self.item(row, 2).text())*100, 1)) + "%")
-				self.setItem(row, 3, newitem)
-				pass
-# ++++++++++++++++++++++++++++++++++++++++++++++++ Calculation Event +++++++++++++++++++++++++++++++++++++++++++++++
-	def calculationEvent(self):
-		try:
-			item = self.item(self.currentRow(), self.currentColumn())
-			self.value = item.text()
-			if self.value is not '':
-				self.BGColorCalculation()
-		except AttributeError:
-			pass
 # +++++++++++++++++++++++++++++++++++++++++++++++++++ TABLE EVENT ++++++++++++++++++++++++++++++++++++++++++++++++++
 	def tabEvent(self):
 		try:
@@ -374,6 +297,7 @@ class TableView(QTableWidget, QThread):
 		if event.key() == Qt.Key_Delete:
 			for item in self.selectedIndexes():
 				self.setItem(item.row(), item.column(), None)
+				self.removeCellWidget(item.row(), item.column())
 				for table_item in self.table_data['table']:
 					if table_item[0] == item.row() and table_item[1] == item.column():
 						self.table_data['table'] = list(filter(partial(ne, table_item), self.table_data['table']))
@@ -465,14 +389,16 @@ class TableView(QTableWidget, QThread):
 			self.setSpan(index[0], index[1], index[2], index[3])
 				
 		self.setHeaders()
-		self.BGColorCalculation()
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++ Finde item ++++++++++++++++++++++++++++++++++++++++++++++++++
 	def find_items(self, text):
 		if text != "":
 			if len(self.selected_items) != 0:
 				for item in self.selected_items:
 					CellBgColor = QtGui.QColor(0,0,0,0)
-					self.item(item.row(), item.column()).setBackground(CellBgColor)
+					try:
+						self.item(item.row(), item.column()).setBackground(CellBgColor)
+					except RuntimeError:
+						pass
 			for item in self.table_data['table']:
 				try:
 					CellBgColor = QtGui.QColor(item[4][0],item[4][1],item[4][2],item[4][3])
@@ -496,7 +422,10 @@ class TableView(QTableWidget, QThread):
 			if len(self.selected_items) != 0:
 				for item in self.selected_items:
 					CellBgColor = QtGui.QColor(0,0,0,0)
-					self.item(item.row(), item.column()).setBackground(CellBgColor)
+					try:
+						self.item(item.row(), item.column()).setBackground(CellBgColor)
+					except RuntimeError:
+						pass
 			for item in self.table_data['table']:
 				try:
 					CellBgColor = QtGui.QColor(item[4][0],item[4][1],item[4][2],item[4][3])
